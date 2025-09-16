@@ -8,7 +8,7 @@ import CatalogSection from "@/components/CatalogSection";
 import { catalog } from "@/data/catalog";
 import type { CatalogItem } from "@/data/types";
 
-const map: Record<string, { title: string; items: ReadonlyArray<CatalogItem> }> = {
+const map: Record<string, { title: string; items: CatalogItem[] }> = {
   indicators: { title: "อินดิเคเตอร์ทั้งหมด", items: catalog.indicators },
   ebooks:     { title: "Ebook ทั้งหมด",        items: catalog.ebooks },
   ea:         { title: "EA ทั้งหมด",           items: catalog.ea },
