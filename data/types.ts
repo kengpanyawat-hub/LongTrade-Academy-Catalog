@@ -1,8 +1,11 @@
 // data/types.ts
 export type PopupBody = { heading: string; text: string };
 
-// เพิ่มโครงสร้างใหม่ (แสดงเป็นกรอบลิสต์ในโมดัล)
-export type PopupSection = { title: string; items: string[] };
+// กรอบลิสต์ในโมดัล
+export type PopupSection = {
+  title: string;
+  items: ReadonlyArray<string>; // << เปลี่ยนเป็น ReadonlyArray
+};
 
 export type CatalogItem = {
   title: string;
@@ -10,12 +13,15 @@ export type CatalogItem = {
   cover: string;
   website?: string;
   facebook?: string;
-  samples?: string[];
-  tags?: string[]; // (ถ้ามีจะโชว์เป็นชิป)
+
+  // ทั้งหมดเปลี่ยนเป็น ReadonlyArray
+  samples?: ReadonlyArray<string>;
+  tags?: ReadonlyArray<string>;
+
   popup: {
     intro?: string;
-    body?: PopupBody[];      // ของเดิมยังใช้ได้ (fallback อัตโนมัติ)
-    sections?: PopupSection[]; // ของใหม่ที่เราจะใช้ทำลิสต์
-    metrics?: string[];        // (ออปชัน) สรุปท้าย ๆ แบบในรูปตัวอย่าง
+    body?: ReadonlyArray<PopupBody>;          // เดิม: PopupBody[]
+    sections?: ReadonlyArray<PopupSection>;   // เดิม: PopupSection[]
+    metrics?: ReadonlyArray<string>;          // เดิม: string[]
   };
 };
