@@ -1,0 +1,1 @@
+import raw from './content.json'; export type Content = typeof raw; export const content = raw as Content;
