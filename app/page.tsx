@@ -10,6 +10,9 @@ import WhyUs from "@/components/WhyUs";
 import Upskill from "@/components/Upskill";
 // app/page.tsx (เฉพาะส่วนที่เพิ่ม)
 import UseCases from "@/components/UseCases";
+import RedCta from "@/components/RedCta";
+import PromoSplit from "@/components/PromoSplit";
+import PromoVideo from "@/components/PromoVideo";
 
 
 export default function Page() {
@@ -18,6 +21,7 @@ export default function Page() {
       <Background />
       <Navbar />
       <Hero />
+	  <PromoVideo />
       <SubHero />
       <div id="catalog" className="container-narrow py-12">
         <CatalogSection title="อินดิเคเตอร์" items={catalog.indicators.slice(0,3)} href="/indicators" />
@@ -26,6 +30,23 @@ export default function Page() {
         <CatalogSection title="คอร์สเรียน" items={catalog.courses.slice(0,3)} href="/courses" />
         <CatalogSection title="บทความ" items={catalog.articles.slice(0,3)} href="/articles" />
       </div>
+	  <PromoSplit
+        title="เทรดแบบไม่ต้องเครียด"
+        p1="เปิดกราฟแล้วรู้ทันทีว่าต้องทำอะไร"
+        p2="เครื่องมือของเราให้ทั้งโครงสร้างและสัญญาณที่ชัดเจน"
+        p3={<>วันนี้รับ <span className="text-rose-400 font-semibold">ส่วนลด 25%</span> เริ่มควบคุมอนาคตการเทรดของคุณ</>}
+        ctaText="เริ่มใช้งานเลย"
+        href="https://line.me/ti/p/~longtrade"
+        image="https://ik.imagekit.io/pcqgvgpgi1/bg%20graph.jpg"
+        alt="Background trading graph"
+      />
+	  <RedCta
+        title="เข้าร่วมกับ"
+        highlight="10,000+ เทรดเดอร์"
+        subtitle="อัปเกรดสกิลการเทรดของคุณด้วยเครื่องมือและความรู้คัดสรร"
+        buttonText="ติดต่อเพื่อรับข้อเสนอ"
+        href="https://line.me/ti/p/~longtrade" // เปลี่ยนเป็นลิงก์ที่คุณต้องการ
+      />
 	  <WhyUs />
 	  <Upskill />
 	  <UseCases />   {/* << เพิ่มส่วน Use-cases / Playbook */}
