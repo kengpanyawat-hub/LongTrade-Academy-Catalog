@@ -1,18 +1,52 @@
 "use client";
-import { useState } from "react";
+
+import { useCallback, useEffect, useState } from "react";
 import SectionHeader from "./Section";
 import CatalogCard from "./CatalogCard";
 import DetailModal from "./DetailModal";
-import { CatalogItem } from "@/data/types";
+import type { CatalogItem } from "@/data/types";
 
-export default function CatalogSection({ title, items, href }: { title: string; items: CatalogItem[]; href: string }) {
+type Props = {
+  title: string;
+  items: ReadonlyArray<CatalogItem>;
+  href?: string;
+};
+
+export default function CatalogSection({ title, items, href = "#" }: Props) {
   const [open, setOpen] = useState<CatalogItem | null>(null);
+
+  // ปิดโมดัลด้วยปุ่ม ESC
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const handleOpen = useCallback((it: CatalogItem | null) => setOpen(it), []);
+
   return (
     <section className="mb-16">
       <SectionHeader title={title} href={href} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((it, idx) => (<CatalogCard item={it} key={idx} onOpen={setOpen} />))}
-      </div>
+
+      {items.length === 0 ? (
+        <div className="glass p-6 rounded-xl text-center opacity-80">
+          ยังไม่มีรายการในหมวดนี้
+        </div>
+      ) : (
+        <div
+          className="
+            grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6
+            [grid-auto-rows:1fr]
+          "
+        >
+          {items.map((it, idx) => (
+            <CatalogCard item={it} key={idx} onOpen={handleOpen} />
+          ))}
+        </div>
+      )}
+
       <DetailModal item={open} onClose={() => setOpen(null)} />
     </section>
   );
