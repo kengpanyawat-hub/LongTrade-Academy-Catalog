@@ -1,78 +1,78 @@
 // components/PromoSplit.tsx
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import clsx from "clsx";
+import type { ReactNode } from "react";
 
-const IMAGE_BG =
-  "https://ik.imagekit.io/pcqgvgpgi1/bg%20graph.jpg";
+type PromoSplitProps = {
+  title: string;
+  p1: ReactNode;
+  p2: ReactNode;
+  p3?: ReactNode;
+  ctaText?: string;
+  href?: string;
+  image?: string;
+  alt?: string;
+  className?: string;
+};
 
-export default function PromoSplit() {
+export default function PromoSplit({
+  title,
+  p1,
+  p2,
+  p3,
+  ctaText = "เริ่มใช้งานเลย",
+  href = "#",
+  image = "https://ik.imagekit.io/pcqgvgpgi1/bg%20graph.jpg",
+  alt = "trading illustration",
+  className,
+}: PromoSplitProps) {
   return (
-    <section className="container-narrow py-10 md:py-14">
-      {/* ขอบไฮไลต์ด้านนอกบาง ๆ */}
-      <div className="relative overflow-hidden rounded-3xl p-[1px] bg-gradient-to-br from-rose-500/30 via-rose-400/10 to-transparent">
-        {/* กล่อง glass */}
-        <div
-          className="
-            relative grid md:grid-cols-2 items-center gap-6 md:gap-10 rounded-3xl
-            bg-white/5 backdrop-blur-xl border border-white/10
-          "
-        >
-          {/* glow แดงนุ่ม ๆ ด้านหลัง */}
-          <div
-            className="absolute -inset-24 -z-10 bg-rose-500/10 blur-3xl rounded-[40px]"
-            aria-hidden
+    <section
+      className={clsx(
+        "relative overflow-hidden rounded-3xl p-8 md:p-12",
+        "bg-white/[0.04] border border-white/10 backdrop-blur-sm",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,.06)]",
+        className
+      )}
+    >
+      {/* glow ตามธีมแดง */}
+      <div className="pointer-events-none absolute -inset-24 bg-[radial-gradient(55%_45%_at_10%_10%,rgba(255,0,0,.16),transparent_65%),radial-gradient(55%_45%_at_90%_90%,rgba(255,70,70,.22),transparent_65%)]" />
+
+      <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* text side */}
+        <div>
+          <h2 className="text-3xl md:text-4xl font-extrabold leading-tight">
+            {title}
+          </h2>
+          <p className="mt-4 text-white/85">{p1}</p>
+          <p className="mt-2 text-white/80">{p2}</p>
+          {p3 ? <p className="mt-2 text-white/80">{p3}</p> : null}
+
+          <Link
+            href={href}
+            className="mt-6 inline-flex items-center gap-2 rounded-full px-5 py-3
+                       bg-rose-500 hover:bg-rose-400 text-white font-semibold
+                       shadow-[0_8px_28px_rgba(244,63,94,.35)] transition"
+          >
+            {ctaText}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* image side */}
+        <div className="relative h-56 md:h-72">
+          <Image
+            src={image}
+            alt={alt}
+            fill
+            className="object-cover rounded-2xl border border-white/10"
+            sizes="(min-width: 768px) 40vw, 90vw"
+            priority
           />
-
-          {/* ฝั่งข้อความ */}
-          <div className="px-6 md:px-10 py-10 md:py-12">
-            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              เทรดแบบไม่ต้องเครียด
-            </h2>
-
-            <p className="mt-4 opacity-90 text-base md:text-lg">
-              เปิดกราฟแล้วรู้ทันทีว่าต้องทำอะไร เครื่องมือของเราให้ทั้งโครงสร้างและสัญญาณที่ชัดเจน
-            </p>
-
-            <p className="mt-3 opacity-90">
-              วันนี้รับ <span className="text-brand font-semibold">ส่วนลด 25%</span>{" "}
-              เริ่มควบคุมอนาคตการเทรดของคุณ
-            </p>
-
-            <Link
-              href="https://line.me/ti/p/~longtrade"
-              className="
-                mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3
-                bg-gradient-to-b from-rose-500 to-rose-600 text-white font-semibold
-                shadow-[0_10px_30px_rgba(244,63,94,.45)]
-                hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-rose-300/60
-              "
-            >
-              เริ่มใช้งานเลย <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* ฝั่งรูป */}
-          <div className="relative min-h-[220px] md:h-full">
-            <Image
-              src={IMAGE_BG}
-              alt="Background trading graph"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover rounded-b-3xl md:rounded-r-3xl md:rounded-bl-none"
-            />
-            {/* เงาไล่โทนให้ตัวหนังสือชัด */}
-            <div
-              className="
-                absolute inset-0 pointer-events-none
-                rounded-b-3xl md:rounded-r-3xl md:rounded-bl-none
-                bg-gradient-to-t md:bg-gradient-to-l
-                from-black/50 via-black/10 to-transparent
-              "
-            />
-          </div>
         </div>
       </div>
     </section>
