@@ -67,6 +67,15 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* เมนูพิเศษ: GOLDFLOW */}
+          <Link
+            href="/indicators/goldflow"
+            className={`pill ${pathname === "/indicators/goldflow" ? "active" : ""}`}
+            title="GOLDFLOW Indicator"
+          >
+            GOLDFLOW
+          </Link>
         </div>
 
         {/* CTA */}
@@ -103,6 +112,15 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+
+              {/* เมนูพิเศษ: GOLDFLOW */}
+              <Link
+                href="/indicators/goldflow"
+                onClick={() => setOpen(false)}
+                className={`pill ${pathname === "/indicators/goldflow" ? "active" : ""}`}
+              >
+                GOLDFLOW
+              </Link>
             </div>
             <div className="mt-6">
               <a href={content.navbar.cta_link} target="_blank" className="pill cta w-full justify-center inline-flex items-center gap-2">

@@ -54,6 +54,36 @@ body {
 .bg-anim .bubble { position:absolute; width:clamp(120px,16vw,240px); height:clamp(120px,26vw,260px); border-radius:40%; background: radial-gradient(60% 60% at 45% 40%, rgba(255,60,60,.35), rgba(255,60,60,.05) 60%, transparent 85%), radial-gradient(60% 60% at 55% 60%, rgba(0,0,0,.6), rgba(0,0,0,.2) 60%, transparent 85%); filter: blur(10px); mix-blend-mode: screen; animation: rise var(--dur,22s) linear infinite; }
 .bg-anim .sparkfield, .bg-anim .sparkfield::before, .bg-anim .sparkfield::after { position:absolute; inset:-10%; content:""; background-image: radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.35), transparent 60%), radial-gradient(1px 1px at 60% 65%, rgba(255,255,255,.25), transparent 60%), radial-gradient(1px 1px at 35% 80%, rgba(255,255,255,.30), transparent 60%), radial-gradient(1px 1px at 80% 40%, rgba(255,255,255,.22), transparent 60%); background-repeat: repeat; background-size: 420px 420px; animation: twinkle 9s ease-in-out infinite; mix-blend-mode: screen; }
 
+/* ==== Goldflow reviews marquee (always-on) ==== */
+.gf-row {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.gf-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  will-change: transform;
+  animation-duration: 50s;         /* ค่าพื้นฐาน (ถูก override ได้จาก inline style) */
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-play-state: running;
+}
+
+.gf-left  { animation-name: gf-scroll-left; }
+.gf-right { animation-name: gf-scroll-right; }
+
+/* การ์ดรีวิว */
+.gf-card { min-width: 520px; }
+
+/* keyframes */
+@keyframes gf-scroll-left   { 0% {transform: translateX(0)} 100% {transform: translateX(-50%)} }
+@keyframes gf-scroll-right  { 0% {transform: translateX(-50%)} 100% {transform: translateX(0)} }
+
+
+
+
 /* Reveal */
 .reveal { opacity:0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
 .reveal.show { opacity:1; transform: translateY(0); }

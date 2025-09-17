@@ -5,15 +5,15 @@ import Navbar from "@/components/Navbar";
 import Background from "@/components/Background";
 import Footer from "@/components/Footer";
 import CatalogSection from "@/components/CatalogSection";
-import { catalog } from "@/data/catalog"; // หรือไฟล์ catalog_from_longtrade_html
+import { catalog } from "@/data/catalog";
 import type { CatalogItem } from "@/data/types";
 
 const map: Record<string, { title: string; items: ReadonlyArray<CatalogItem> }> = {
   indicators: { title: "อินดิเคเตอร์ทั้งหมด", items: catalog.indicators },
-  ebooks:     { title: "Ebook ทั้งหมด",        items: catalog.ebooks },
-  ea:         { title: "EA ทั้งหมด",           items: catalog.ea },
-  courses:    { title: "คอร์สเรียนทั้งหมด",     items: catalog.courses },
-  articles:   { title: "บทความทั้งหมด",         items: catalog.articles },
+  ebooks:     { title: "Ebook ทั้งหมด",      items: catalog.ebooks },
+  ea:         { title: "EA ทั้งหมด",         items: catalog.ea },
+  courses:    { title: "คอร์สเรียนทั้งหมด",   items: catalog.courses },
+  articles:   { title: "บทความทั้งหมด",       items: catalog.articles },
 };
 
 export default function CategoryPage() {
@@ -23,11 +23,15 @@ export default function CategoryPage() {
 
   const filtered = useMemo(
     () =>
-      ctx.items.filter(i =>
-        (i.title + i.summary + (i.popup?.intro ?? "")).toLowerCase().includes(q.toLowerCase())
+      ctx.items.filter((i) =>
+        (i.title + i.summary + (i.popup?.intro ?? ""))
+          .toLowerCase()
+          .includes(q.toLowerCase())
       ),
     [q, ctx.items]
   );
+
+  const isEbook = category === "ebooks"; // NEW
 
   return (
     <main>
@@ -44,7 +48,14 @@ export default function CategoryPage() {
             aria-label="ค้นหา"
           />
         </div>
-        <CatalogSection title="" items={filtered} href={"#"} />
+
+        {/* ส่ง variant ตามหมวด */}
+        <CatalogSection
+          title=""
+          items={filtered}
+          href="#"
+          variant={isEbook ? "ebook" : "default"} // NEW
+        />
       </div>
       <Footer />
     </main>
