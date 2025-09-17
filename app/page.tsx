@@ -14,7 +14,6 @@ import RedCta from "@/components/RedCta";
 import PromoSplit from "@/components/PromoSplit";
 import PromoVideo from "@/components/PromoVideo";
 
-
 export default function Page() {
   return (
     <main>
