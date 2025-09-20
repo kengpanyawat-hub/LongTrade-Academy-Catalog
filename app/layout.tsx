@@ -14,6 +14,7 @@ const DESCRIPTION =
 const OG_IMAGE = `${SITE_URL}/og/cover.jpg`; // public/og/cover.jpg
 
 export const metadata: Metadata = {
+  icons: { icon: "/favicon.ico" }
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
