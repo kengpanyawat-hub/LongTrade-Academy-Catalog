@@ -1,5 +1,5 @@
 // next.config.mjs
-/** @type {import('next').NextConfig} */
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -9,7 +9,6 @@ const nextConfig = {
       { protocol: "https", hostname: "placehold.co" },
     ],
   },
-  transpilePackages: ["sanity", "@sanity/ui", "@sanity/vision"],
 };
 
 export default nextConfig;
