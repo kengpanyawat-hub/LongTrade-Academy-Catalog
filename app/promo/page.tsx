@@ -3,11 +3,31 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { sanityClient } from "@/lib/sanity.client";
-import { promosQuery, type PromoDoc } from "@/lib/sanity.queries";
+import { groq } from "next-sanity";
+
+// ---- GROQ ตรงนี้แทนการ import จากไฟล์อื่น ----
+const PROMOS_QUERY = groq`
+  *[_type == "promo"]{
+    _id,
+    title,
+    desc,
+    group,
+    // พยายามดึง url จาก image asset ถ้ามี; ถ้า schema ใช้ฟิลด์ img เป็น string ก็จะยังทำงานได้
+    "img": coalesce(image.asset->url, img)
+  }
+`;
+
+type PromoDoc = {
+  _id: string;
+  title: string;
+  desc?: string;
+  group?: string; // "xm" | "lt"
+  img?: string;
+};
 
 // แปลงผลจาก CMS ให้อยู่ในโครงเดิมของหน้า
 async function loadPromosFromCMS() {
-  const docs = await sanityClient.fetch<PromoDoc[]>(promosQuery, {}, { cache: "no-store" });
+  const docs = await sanityClient.fetch<PromoDoc[]>(PROMOS_QUERY, {}, { cache: "no-store" });
   const xm = docs
     .filter((d) => d.group === "xm")
     .map((d) => ({
@@ -32,6 +52,7 @@ export const metadata: Metadata = {
 
 type Promo = { title: string; desc: string; img: string };
 
+// --------- Fallback แบบเดิม (ใช้เมื่อ CMS ว่าง/ดึงไม่สำเร็จ) ----------
 const xmPromos: Promo[] = [
   {
     title: "เปิดบัญชีเทรดครั้งแรก รับ $30",
@@ -100,12 +121,9 @@ const ltSpecials: Promo[] = [
 
 // 🔧 ทำให้หน้าเป็น async เพื่อใช้ await ได้
 export default async function PromoPage() {
-  // ใช้ endpoint เดียวกับที่ใช้งานได้ในโปรเจ็กต์
   const { xm, lt } = await loadPromosFromCMS().catch(() => ({ xm: [], lt: [] }));
   const xmPromosData = xm.length ? xm : xmPromos; // ถ้า CMS ว่าง ใช้ค่าเดิม
   const ltSpecialsData = lt.length ? lt : ltSpecials;
-  const EP =
-    "https://script.google.com/macros/s/AKfycbypTGXNeJaTpmoBlcEZTodJoWveZMirQJ-BhkbS_-HQeH89rwMekB2xDuHOh0S36KpL-A/exec";
 
   return (
     <>
@@ -115,9 +133,7 @@ export default async function PromoPage() {
           <div className="pointer-events-none absolute -inset-24 bg-[radial-gradient(55%_45%_at_10%_10%,rgba(255,0,0,.16),transparent_65%),radial-gradient(55%_45%_at_90%_90%,rgba(255,70,70,.22),transparent_65%)]" />
           <div className="relative">
             <h1 className="text-3xl md:text-4xl font-extrabold">โปรโมชั่นโบรก XM</h1>
-            <p className="mt-3 text-white/80">
-              อัปเดตดีลพิเศษ/คูปองประจำเดือน สำหรับอินดิเคเตอร์ คอร์ส และ eBook
-            </p>
+            <p className="mt-3 text-white/80">อัปเดตดีลพิเศษ/คูปองประจำเดือน สำหรับอินดิเคเตอร์ คอร์ส และ eBook</p>
             <div className="mt-6 grid gap-4">
               {xmPromosData.map((p, i) => (
                 <PromoBlock key={i} data={p} />
@@ -140,38 +156,26 @@ export default async function PromoPage() {
         </section>
       </main>
 
-      {/* Modal */}
+      {/* Modal + Toast + Script เหมือนเดิม (ตัด EP ออกได้เพราะไม่ใช้ในฝั่งเซิร์ฟเวอร์ตรงนี้) */}
       <div id="xm-claim" className="xm-modal">
         <div className="xm-sheet">
           <h3 className="text-xl md:text-2xl font-bold">รับสิทธิ์ฟรีสำหรับสมาชิก XM</h3>
           <p className="mt-2 text-white/80">กรอกข้อมูลเพื่อให้ทีมงานตรวจสอบสิทธิ์และติดต่อกลับ</p>
-
           <form id="xmForm" className="mt-4 space-y-3">
             <input name="name" type="text" required placeholder="ชื่อ-นามสกุล" className="xm-input" />
             <input name="email" type="email" required placeholder="อีเมลของคุณ" className="xm-input" />
-            <input
-              name="account"
-              type="text"
-              inputMode="numeric"
-              placeholder="เลขพอร์ต/บัญชีเทรด (ถ้ามี)"
-              className="xm-input"
-            />
+            <input name="account" type="text" inputMode="numeric" placeholder="เลขพอร์ต/บัญชีเทรด (ถ้ามี)" className="xm-input" />
             <input name="phone" type="tel" placeholder="เบอร์โทรสำหรับติดต่อกลับ" className="xm-input" />
             <input id="xmSource" name="source" type="hidden" value="" />
             <div className="flex items-center gap-2">
-              <button type="submit" className="btn-red">
-                รับโค้ดสิทธิ์ใช้งาน
-              </button>
-              <a href="#" className="btn-ghost">
-                ปิด
-              </a>
+              <button type="submit" className="btn-red">รับโค้ดสิทธิ์ใช้งาน</button>
+              <a href="#" className="btn-ghost">ปิด</a>
             </div>
             <div className="text-xs text-white/60">* เงื่อนไขเป็นไปตามที่บริษัทกำหนด</div>
           </form>
         </div>
       </div>
 
-      {/* Toast */}
       <div id="xmToast" className="xm-toast" />
 
       <style>{`
@@ -205,8 +209,6 @@ export default async function PromoPage() {
     el.classList.add('show');
     setTimeout(function(){ el.classList.remove('show'); }, 3200);
   }
-
-  // ใส่ source (หัวข้อโปรโมชัน) ตอนกดปุ่มเปิดฟอร์ม
   document.addEventListener('click', function(e){
     var t = e.target;
     if(!(t instanceof Element)) return;
@@ -216,8 +218,6 @@ export default async function PromoPage() {
     var input = document.getElementById('xmSource');
     if(input) input.value = src;
   }, true);
-
-  // ส่งเข้า Google Sheet แบบ no-cors + แจ้ง Telegram แบบ fire-and-forget
   var form = document.getElementById('xmForm');
   if(form){
     form.addEventListener('submit', function(ev){
@@ -233,7 +233,6 @@ export default async function PromoPage() {
         ua: navigator.userAgent
       };
       if(!EP){ toast('Endpoint ไม่ถูกตั้งค่า'); return; }
-
       fetch(EP, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) })
       .then(function(){
         toast('ส่งคำขอแล้ว');
@@ -267,7 +266,7 @@ export default async function PromoPage() {
   );
 }
 
-function PromoBlock({ data }: { data: Promo }) {
+function PromoBlock({ data }: { data: { title: string; desc: string; img: string } }) {
   return (
     <div className="glass p-5 rounded-2xl border border-white/10">
       <div className="promo-card">

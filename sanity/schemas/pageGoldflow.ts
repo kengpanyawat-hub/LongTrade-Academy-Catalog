@@ -1,15 +1,32 @@
 // sanity/schemas/pageGoldflow.ts
-import {defineField, defineType} from 'sanity'
+import {defineType, defineField} from "sanity";
+
 export default defineType({
-  name: 'pageGoldflow',
-  title: 'Page: Goldflow',
-  type: 'document',
-  // singleton
-  __experimental_formPreviewTitle: 'Goldflow Page',
+  name: "pageGoldflow",
+  title: "GoldFlow Page",
+  type: "document",
+
   fields: [
-    defineField({ name:'heroTitle', title:'Hero Title', type:'string' }),
-    defineField({ name:'heroIntro', title:'Hero Intro', type:'text' }),
-    defineField({ name:'videoUrl', title:'Video URL', type:'url' }),
-    defineField({ name:'showcaseImage', title:'Showcase Image', type:'image', options:{hotspot:true} }),
-  ]
-})
+    defineField({
+      name: "heroTitle",
+      title: "Hero Title",
+      type: "string",
+    }),
+    defineField({
+      name: "heroIntro",
+      title: "Hero Intro",
+      type: "text",
+    }),
+    // เพิ่มฟิลด์อื่น ๆ ได้ตามต้องการ
+    // defineField({ name: "heroVideoUrl", title: "Hero Video URL", type: "url" }),
+    // defineField({ name: "lineUrl", title: "LINE URL", type: "url" }),
+  ],
+
+  // แสดงชื่อในแถบรายการ/แถบขวา
+  preview: {
+    select: { title: "heroTitle" },
+    prepare: ({ title }) => ({
+      title: title || "GoldFlow Page",
+    }),
+  },
+});

@@ -23,7 +23,7 @@ export default function Page() {
       <SubHero />
       <div id="catalog" className="container-narrow py-12">
         <CatalogSection title="อินดิเคเตอร์" items={catalog.indicators.slice(0,3)} href="/indicators" />
-        <CatalogSection title="Ebook" items={catalog.ebooks.slice(0,3)} href="/ebooks" imageAspect="tall"/>
+        <CatalogSection title="Ebook" items={catalog.ebooks.slice(0,3)} href="/ebooks" />
         <CatalogSection title="EA (Expert Advisor)" items={catalog.ea.slice(0,3)} href="/ea" />
         <CatalogSection title="คอร์สเรียน" items={catalog.courses.slice(0,3)} href="/courses" />
         <CatalogSection title="บทความ" items={catalog.articles.slice(0,3)} href="/articles" />

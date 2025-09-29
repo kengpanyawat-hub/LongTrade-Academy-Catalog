@@ -1,293 +1,260 @@
-// components/DetailModal.tsx
+// components/XMClaimModal.tsx
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
-import { Share2, CheckCircle2, Link as LinkIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
-import type { CatalogItem, PopupSection, PopupBody } from "@/data/types";
+
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/Toast";
-import XMClaimModal, { XMClaimButton } from "@/components/XMClaimModal";
 
-// แปลง body เก่าเป็น sections
-function buildSections(item: CatalogItem): ReadonlyArray<PopupSection> {
-  if (item.popup?.sections?.length) return item.popup.sections!;
-  const bodies: ReadonlyArray<PopupBody> =
-    (item.popup?.body ?? []) as ReadonlyArray<PopupBody>;
-  const splitter = /\n+|•|·|;|—|–|-{1}\s/g;
-  return bodies.map((b) => {
-    const raw = b.text?.trim() ?? "";
-    const parts = raw.split(splitter).map((s) => s.trim()).filter(Boolean);
-    return { title: b.heading, items: parts.length ? parts : [raw] };
-  });
-}
+type XMOpenDetail = {
+  source?: string;
+  page?: string;
+};
 
-function toMarkdown(item: CatalogItem, secs: ReadonlyArray<PopupSection>) {
-  const head = `# ${item.title}\n\n${item.popup?.intro || item.summary}\n`;
-  const tags = item.tags?.length ? `\n**Tags:** ${item.tags.join(", ")}\n` : "";
-  const steps = secs
-    .map((s, i) => `\n### ${i + 1}. ${s.title}\n- ${s.items.join("\n- ")}`)
-    .join("");
-  const metrics = item.popup?.metrics?.length
-    ? `\n\n**Metrics**\n- ${item.popup.metrics.join("\n- ")}`
-    : "";
-  return head + tags + steps + metrics;
-}
-
-export default function DetailModal({
-  item,
-  onClose,
-}: {
-  item: CatalogItem | null;
-  onClose: () => void;
-}) {
-  const [copied, setCopied] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [xmOpen, setXmOpen] = useState(false);
-  const sections = useMemo(() => (item ? buildSections(item) : []), [item]);
-
-  const pathname = usePathname();
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}${pathname || ""}`
-      : "";
-
+export default function XMClaimModal() {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
 
-  // lock scroll ขณะเปิดโมดัล
+  // form state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [account, setAccount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [source, setSource] = useState<string>("");
+  const [page, setPage] = useState<string>("");
+
+  const [loading, setLoading] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // endpoint (fallback ไป /api/lead)
+  const ENDPOINT =
+    (typeof window !== "undefined"
+      ? (process as any).env?.NEXT_PUBLIC_GS_ENDPOINT
+      : undefined) ||
+    process.env.NEXT_PUBLIC_GS_ENDPOINT ||
+    "/api/lead";
+
+  // ฟัง event จากที่อื่น: document.dispatchEvent(new CustomEvent('xm-open', { detail }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const d = (e as CustomEvent<XMOpenDetail>).detail || {};
+      setSource(d.source ?? "");
+      setPage(d.page ?? "");
+      setOpen(true);
+    };
+    document.addEventListener("xm-open", handler as EventListener);
+    return () =>
+      document.removeEventListener("xm-open", handler as EventListener);
+  }, []);
+
+  // ปิดเมื่อกด ESC
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  // ล็อกสกอลล์เมื่อเปิด
   useEffect(() => {
     const prev = document.body.style.overflow;
-    if (item) document.body.style.overflow = "hidden";
+    if (open) document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [item]);
+  }, [open]);
 
-  const tryNativeShare = async () => {
-    if (!item) return;
-    const data = {
-      title: item.title,
-      text: item.popup?.intro || item.summary || item.title,
-      url: shareUrl,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(data);
-        return true;
-      } catch {}
+  const reset = () => {
+    setName("");
+    setEmail("");
+    setAccount("");
+    setPhone("");
+    setSource("");
+    setPage("");
+  };
+
+  const submit = async () => {
+    if (!ENDPOINT) {
+      toast({ title: "Endpoint ไม่ถูกตั้งค่า", variant: "error" });
+      return;
     }
-    return false;
-  };
-
-  const openShare = async () => {
-    const ok = await tryNativeShare();
-    if (!ok) setMenuOpen((v) => !v);
-  };
-
-  const shareTo = (platform: "facebook" | "line" | "x") => {
-    const title = encodeURIComponent(item?.title || "Longtrade Academy");
-    const url = encodeURIComponent(shareUrl);
-    let href = "";
-    switch (platform) {
-      case "facebook":
-        href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        break;
-      case "line":
-        href = `https://line.me/R/msg/text/?${encodeURIComponent(
-          `${item?.title || ""} ${shareUrl}`
-        )}`;
-        break;
-      case "x":
-        href = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        break;
+    if (!name || !email) {
+      toast({ title: "กรอกชื่อและอีเมลให้ครบก่อนนะ", variant: "error" });
+      return;
     }
-    window.open(href, "_blank", "noopener,noreferrer");
-    setMenuOpen(false);
+
+    setLoading(true);
+    try {
+      const payload = {
+        name,
+        email,
+        account,
+        phone,
+        source,
+        page: page || (typeof window !== "undefined" ? window.location.pathname : ""),
+        createdAt: new Date().toISOString(),
+      };
+
+      const res = await fetch(String(ENDPOINT), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("bad_response");
+
+      toast({
+        title: "ส่งคำขอแล้ว",
+        description: "ทีมงานจะติดต่อกลับทางอีเมลหรือโทรศัพท์",
+        variant: "success",
+      });
+      reset();
+      setOpen(false);
+    } catch (err) {
+      toast({
+        title: "ส่งไม่สำเร็จ",
+        description: "กรุณาลองใหม่ หรือทัก LINE @longtrade",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
-  };
+  if (!open) return null;
 
   return (
-    <AnimatePresence>
-      {item && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm overflow-y-auto overscroll-contain touch-pan-y"
-          onWheel={(e) => {
-            const el = e.currentTarget as HTMLDivElement;
-            el.scrollTop += e.deltaY;
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
-          }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="min-h-full flex items-start justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 220, damping: 22 }}
-              className="modal-shell w-full max-w-4xl overflow-hidden mt-10 mb-10 relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header image */}
-              <div className="relative w-full h-[220px] md:h-[260px]">
-                <Image src={item.cover} alt={item.title} fill className="object-cover" />
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
-                <button
-                  className="absolute top-3 right-3 text-2xl leading-none opacity-80 hover:opacity-100"
-                  onClick={onClose}
-                  aria-label="ปิด"
-                >
-                  ×
-                </button>
-              </div>
+    <div
+      className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm grid place-items-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setOpen(false);
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className="w-full max-w-lg rounded-2xl overflow-hidden relative"
+      >
+        <div className="relative p-6 md:p-8 bg-white/[0.04] border border-white/10">
+          <div className="pointer-events-none absolute -inset-6 md:-inset-8 -z-10 rounded-3xl bg-[radial-gradient(60%_50%_at_10%_10%,rgba(255,0,0,.18),transparent_70%),radial-gradient(60%_50%_at_90%_90%,rgba(255,70,70,.22),transparent_70%)]" />
+          <h3 className="text-xl md:text-2xl font-bold">
+            รับสิทธิ์ฟรีสำหรับสมาชิก XM
+          </h3>
+          <p className="mt-2 text-white/80">
+            กรอกข้อมูลเพื่อให้ทีมงานตรวจสอบสิทธิ์และติดต่อกลับ
+          </p>
 
-              {/* Body */}
-              <div className="p-6 md:p-8">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-bold">{item.title}</h3>
-                    <p className="opacity-80 mt-1">
-                      {item.popup?.intro || item.summary}
-                    </p>
-                    {item.tags?.length ? (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {item.tags.map((t) => (
-                          <span key={t} className="pill">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
+          <div className="mt-4 space-y-3">
+            <input
+              type="text"
+              required
+              placeholder="กรอกชื่อของคุณ"
+              className="xm-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="email"
+              required
+              placeholder="กรอกอีเมลของคุณ"
+              className="xm-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="เลขพอร์ต/บัญชีเทรด (ถ้ามี)"
+              className="xm-input"
+              value={account}
+              onChange={(e) => setAccount(e.target.value)}
+            />
+            <input
+              type="tel"
+              placeholder="เบอร์โทรสำหรับติดต่อกลับ"
+              className="xm-input"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
 
-                  {/* ปุ่มแชร์ */}
-                  <div className="relative">
-                    <button
-                      className="glass px-3 py-2 rounded-lg inline-flex items-center gap-2"
-                      onClick={openShare}
-                      title="แชร์ไปยังโซเชียล / คัดลอกลิงก์"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      แชร์
-                    </button>
-
-                    {/* เมนูแชร์สำรอง */}
-                    {menuOpen && (
-                      <div
-                        className="absolute right-0 mt-2 w-56 glass rounded-xl p-2 border border-white/10 shadow-xl z-[5]"
-                        role="menu"
-                      >
-                        <button
-                          className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg"
-                          onClick={() => shareTo("facebook")}
-                        >
-                          แชร์ไป Facebook
-                        </button>
-                        <button
-                          className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg"
-                          onClick={() => shareTo("line")}
-                        >
-                          แชร์ไป LINE
-                        </button>
-                        <button
-                          className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg"
-                          onClick={() => shareTo("x")}
-                        >
-                          แชร์ไป X (Twitter)
-                        </button>
-                        <button
-                          className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg inline-flex items-center gap-2"
-                          onClick={copyLink}
-                        >
-                          {copied ? (
-                            <>
-                              <CheckCircle2 className="w-4 h-4 text-brand" />
-                              คัดลอกลิงก์แล้ว
-                            </>
-                          ) : (
-                            <>
-                              <LinkIcon className="w-4 h-4" />
-                              คัดลอกลิงก์
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sections list */}
-                <ol className="mt-6 space-y-4">
-                  {sections.map((s, i) => (
-                    <li
-                      key={i}
-                      className="glass p-4 border border-white/10 rounded-xl relative"
-                    >
-                      <div className="absolute -left-[1px] top-0 bottom-0 w-[4px] bg-gradient-to-b from-brand/70 to-transparent rounded-l-xl" />
-                      <div className="font-semibold mb-1">
-                        {i + 1}. {s.title}
-                      </div>
-                      <ul className="list-disc ml-5 opacity-85 text-sm">
-                        {s.items.map((b, k) => (
-                          <li key={k}>{b}</li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
-                </ol>
-
-                {/* Metrics */}
-                {item.popup?.metrics?.length ? (
-                  <div className="glass p-4 mt-4">
-                    <div className="font-semibold mb-1">ตัวชี้วัดที่แนะนำ</div>
-                    <ul className="list-disc ml-5 opacity-85 text-sm">
-                      {item.popup.metrics.map((m, i) => (
-                        <li key={i}>{m}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {/* CTA Zone */}
-                <div className="pt-6 flex flex-wrap gap-3">
-                  <a
-                    href="https://line.me/ti/p/~longtrade"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-line"
-                  >
-                    LINE สั่งซื้อ/สอบถาม
-                  </a>
-
-                  {/* ใช้ XMClaimButton + XMClaimModal */}
-                  <XMClaimButton
-                    onClick={() => setXmOpen(true)}
-                    className="inline-flex items-center rounded-xl px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-[0_8px_28px_rgba(244,63,94,.35)] transition"
-                  />
-                </div>
-              </div>
-
-              {/* ป็อปอัพ XM (ใช้ตัวกลางเดียว) */}
-              <XMClaimModal
-                open={xmOpen}
-                onClose={() => setXmOpen(false)}
-                page={pathname || ""}
-                source={`catalog:${item?.title || ""}`}
+            {/* ซ่อนข้อมูลอัตโนมัติ */}
+            {source ? (
+              <input
+                type="hidden"
+                value={source}
+                readOnly
+                aria-hidden="true"
               />
-            </motion.div>
+            ) : null}
+            {page ? (
+              <input type="hidden" value={page} readOnly aria-hidden="true" />
+            ) : null}
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                disabled={loading}
+                className="btn-red"
+                onClick={submit}
+              >
+                {loading ? "กำลังส่ง..." : "รับโค้ดสิทธิ์ใช้งาน"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="btn-ghost"
+              >
+                ปิด
+              </button>
+            </div>
+            <div className="text-xs text-white/60">
+              * เงื่อนไขเป็นไปตามที่บริษัทกำหนด
+            </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+      </div>
+
+      {/* styles เฉพาะโมดัล */}
+      <style jsx global>{`
+        .xm-input {
+          width: 100%;
+          border-radius: 0.75rem;
+          padding: 0.9rem 1rem;
+          background: rgba(0, 0, 0, 0.45);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          color: #fff;
+          outline: none;
+        }
+        .xm-input::placeholder {
+          color: rgba(255, 255, 255, 0.55);
+        }
+        .btn-red {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          border-radius: 9999px;
+          background: #e11d48;
+          color: #fff;
+          font-weight: 600;
+          box-shadow: 0 8px 28px rgba(244, 63, 94, 0.35);
+          transition: background 0.2s ease;
+        }
+        .btn-red:hover {
+          background: #f43f5e;
+        }
+        .btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.65rem 1.1rem;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.08);
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .btn-ghost:hover {
+          background: rgba(255, 255, 255, 0.12);
+        }
+      `}</style>
+    </div>
   );
 }

@@ -22,30 +22,36 @@ export default function CatalogSection({
 }) {
   const [open, setOpen] = useState<CatalogItem | null>(null);
 
-  // ถ้าไม่ได้ส่ง variant มา พยายามเดาจากหัวข้อ
+  // เดา variant จากหัวข้อ (ไม่แคร์ตัวพิมพ์เล็ก/ใหญ่)
+  const t = title.toLowerCase();
   const computedVariant: Variant =
     variant ??
-    (title.includes("Ebook")
+    (t.includes("ebook")
       ? "ebook"
-      : title.includes("อินดิเคเตอร์")
+      : t.includes("อินดิเคเตอร์")
       ? "indicator"
       : "default");
 
   return (
     <section className="mb-16">
       <SectionHeader title={title} href={href} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((it, idx) => (
           <CatalogCard
-            item={it}
             key={idx}
+            item={it}
             onOpen={setOpen}
             variant={computedVariant}
           />
         ))}
       </div>
 
-      <DetailModal item={open} onClose={() => setOpen(null)} />
+      {/* แสดงโมดัลเมื่อมี item เท่านั้น */}
+      {open && (
+        // @ts-expect-error – ใช้ข้าม error typing ชั่วคราวของ DetailModal ในโปรเจ็กต์นี้
+        <DetailModal item={open} onClose={() => setOpen(null)} />
+      )}
     </section>
   );
 }

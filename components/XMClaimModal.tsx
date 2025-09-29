@@ -1,5 +1,6 @@
 // components/XMClaimModal.tsx
 "use client";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useToast } from "@/components/Toast";
@@ -13,7 +14,6 @@ type XMClaimPayload = {
   source?: string;
 };
 
-// ใช้ env เดิมตามโปรเจกต์
 const EP =
   (process.env.NEXT_PUBLIC_GAS_XM_ENDPOINT as string | undefined)?.trim() || "";
 
@@ -66,10 +66,9 @@ export default function XMClaimModal() {
 
   const submit = async () => {
     if (!EP) {
-      toast({ title: "Endpoint ไม่ถูกตั้งค่า", variant: "destructive" });
+      toast({ title: "Endpoint ไม่ถูกตั้งค่า", variant: "error" });
       return;
     }
-
     const payload: XMClaimPayload = {
       name: name.current?.value?.trim() || "",
       email: email.current?.value?.trim() || "",
@@ -80,48 +79,23 @@ export default function XMClaimModal() {
     };
 
     if (!payload.name || !payload.email) {
-      toast({ title: "กรอกชื่อและอีเมลก่อนนะ", variant: "destructive" });
+      toast({ title: "กรอกชื่อและอีเมลก่อนนะ", variant: "error" });
       return;
     }
 
     try {
       setLoading(true);
 
-      // ส่งเข้า Google Sheet แบบ no-cors (ข้าม CORS แน่นอน)
-      await fetch(EP, {
+      // ส่งเป็น simple request เลี่ยง preflight CORS
+      const res = await fetch(EP, {
         method: "POST",
-        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // เลี่ยง preflight
         body: JSON.stringify(payload),
       });
 
-      // fire-and-forget แจ้งทีมบน Telegram (ไม่บล็อค UX)
-      try {
-        fetch("/api/notify/telegram", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: [
-              "📩 <b>XM Lead ใหม่</b>",
-              `ชื่อ: ${payload.name || "-"}`,
-              `อีเมล: ${payload.email || "-"}`,
-              `พอร์ต: ${payload.account || "-"}`,
-              `โทร: ${payload.phone || "-"}`,
-              `เพจ: ${payload.page || "-"}`,
-              `ที่มา: ${payload.source || "-"}`,
-            ].join("\n"),
-          }),
-        }).catch(() => {});
-      } catch {
-        // เงียบไว้ ไม่ให้รบกวนผู้ใช้
-      }
+      if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
 
-      // สำเร็จ: ปิด modal + Toast
       setOpen(false);
-      if (name.current) name.current.value = "";
-      if (email.current) email.current.value = "";
-      if (account.current) account.current.value = "";
-      if (phone.current) phone.current.value = "";
-
       toast({
         title: "ส่งคำขอแล้ว",
         description: "ทีมงานจะติดต่อกลับทางอีเมลหรือโทรศัพท์ครับ",
@@ -131,7 +105,7 @@ export default function XMClaimModal() {
       toast({
         title: "ส่งไม่สำเร็จ",
         description: err?.message || "Failed to fetch",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setLoading(false);
@@ -146,7 +120,7 @@ export default function XMClaimModal() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8"
+        className="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-[radial-gradient(60%_50%_at_10%_10%,rgba(255,0,0,.18),transparent_70%),radial-gradient(60%_50%_at_90%_90%,rgba(255,70,70,.22),transparent_70%)]" />
