@@ -31,7 +31,8 @@ export default function CategoryPage() {
     [q, ctx.items]
   );
 
-  const isEbook = category === "ebooks"; // NEW
+  const isEbook = category === "ebooks";
+  const isIndicator = category === "indicators";
 
   return (
     <main>
@@ -49,12 +50,11 @@ export default function CategoryPage() {
           />
         </div>
 
-        {/* ส่ง variant ตามหมวด */}
         <CatalogSection
           title=""
           items={filtered}
           href="#"
-          variant={isEbook ? "ebook" : "default"} // NEW
+          variant={isIndicator ? "indicator" : isEbook ? "ebook" : "default"}
         />
       </div>
       <Footer />

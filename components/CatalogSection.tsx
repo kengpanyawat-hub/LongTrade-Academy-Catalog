@@ -1,36 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import SectionHeader from "./Section";
 import CatalogCard from "./CatalogCard";
 import DetailModal from "./DetailModal";
+import SectionHeader from "./Section";
 import type { CatalogItem } from "@/data/types";
 
-type Props = {
-  title: string;
-  items: CatalogItem[];
-  href: string;
-  /** รองรับรูปแบบเดิมที่หน้าแรกส่งเข้ามา */
-  imageAspect?: "wide" | "tall";
-  /** รองรับรูปแบบที่หน้าหมวดส่ง variant เข้ามา */
-  variant?: "default" | "ebook";
-};
+type Variant = "default" | "ebook" | "indicator";
 
 export default function CatalogSection({
   title,
   items,
   href,
-  imageAspect,
-  variant = "default",
-}: Props) {
+  variant,
+}: {
+  title: string;
+  items: ReadonlyArray<CatalogItem>;
+  href: string;
+  /** ไม่ส่งมาก็ได้ – ถ้าไม่ส่ง จะพยายามเดาจาก title */
+  variant?: Variant;
+}) {
   const [open, setOpen] = useState<CatalogItem | null>(null);
 
-  // กำหนดสัดส่วนรูปปกที่จะส่งให้การ์ด
-  // - ถ้ามี imageAspect ให้ใช้ตามนั้น
-  // - ถ้า variant = 'ebook' ให้ใช้ 'tall'
-  // - ถ้าไม่ใช่ทั้งสองกรณี ใช้ 'wide' เป็นค่าเริ่มต้น
-  const coverAspect: "wide" | "tall" =
-    imageAspect ?? (variant === "ebook" ? "tall" : "wide");
+  // ถ้าไม่ได้ส่ง variant มา พยายามเดาจากหัวข้อ
+  const computedVariant: Variant =
+    variant ??
+    (title.includes("Ebook")
+      ? "ebook"
+      : title.includes("อินดิเคเตอร์")
+      ? "indicator"
+      : "default");
 
   return (
     <section className="mb-16">
@@ -38,13 +37,14 @@ export default function CatalogSection({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((it, idx) => (
           <CatalogCard
-            key={idx}
             item={it}
+            key={idx}
             onOpen={setOpen}
-            coverAspect={coverAspect}
+            variant={computedVariant}
           />
         ))}
       </div>
+
       <DetailModal item={open} onClose={() => setOpen(null)} />
     </section>
   );

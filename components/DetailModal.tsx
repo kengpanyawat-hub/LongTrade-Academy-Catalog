@@ -7,8 +7,9 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { CatalogItem, PopupSection, PopupBody } from "@/data/types";
 import { useToast } from "@/components/Toast";
+import XMClaimModal, { XMClaimButton } from "@/components/XMClaimModal";
 
-// สร้าง sections จากข้อมูลเดิม (รองรับ body เดิม)
+// แปลง body เก่าเป็น sections
 function buildSections(item: CatalogItem): ReadonlyArray<PopupSection> {
   if (item.popup?.sections?.length) return item.popup.sections!;
   const bodies: ReadonlyArray<PopupBody> =
@@ -21,7 +22,6 @@ function buildSections(item: CatalogItem): ReadonlyArray<PopupSection> {
   });
 }
 
-// Markdown (ยังคงเผื่อไว้สำหรับการคัดลอก)
 function toMarkdown(item: CatalogItem, secs: ReadonlyArray<PopupSection>) {
   const head = `# ${item.title}\n\n${item.popup?.intro || item.summary}\n`;
   const tags = item.tags?.length ? `\n**Tags:** ${item.tags.join(", ")}\n` : "";
@@ -43,20 +43,18 @@ export default function DetailModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [xmOpen, setXmOpen] = useState(false); // ป็อปอัพ XM
+  const [xmOpen, setXmOpen] = useState(false);
   const sections = useMemo(() => (item ? buildSections(item) : []), [item]);
 
-  // path ปัจจุบันของหมวด (เช่น /indicators, /ebooks, ...)
   const pathname = usePathname();
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}${pathname || ""}`
       : "";
 
-  // ใช้ Toast
   const { toast } = useToast();
 
-  // ล็อก body ไม่ให้เลื่อนตอนเปิดโมดัล
+  // lock scroll ขณะเปิดโมดัล
   useEffect(() => {
     const prev = document.body.style.overflow;
     if (item) document.body.style.overflow = "hidden";
@@ -76,9 +74,7 @@ export default function DetailModal({
       try {
         await navigator.share(data);
         return true;
-      } catch {
-        // ยกเลิก/ผิดพลาด -> ใช้เมนูสำรอง
-      }
+      } catch {}
     }
     return false;
   };
@@ -264,7 +260,6 @@ export default function DetailModal({
 
                 {/* CTA Zone */}
                 <div className="pt-6 flex flex-wrap gap-3">
-                  {/* ปุ่ม LINE เดิม */}
                   <a
                     href="https://line.me/ti/p/~longtrade"
                     target="_blank"
@@ -274,96 +269,21 @@ export default function DetailModal({
                     LINE สั่งซื้อ/สอบถาม
                   </a>
 
-                  {/* ปุ่ม XM: สีแดง ตัวหนังสือสีขาว */}
-                  <button
-                    type="button"
+                  {/* ใช้ XMClaimButton + XMClaimModal */}
+                  <XMClaimButton
                     onClick={() => setXmOpen(true)}
-                    className="inline-flex items-center rounded-xl px-4 py-2
-                               bg-rose-600 hover:bg-rose-500 text-white font-semibold
-                               shadow-[0_8px_28px_rgba(244,63,94,.35)] transition
-                               border border-white/10"
-                    title="รับฟรีสำหรับสมาชิก XM"
-                  >
-                    รับฟรีสำหรับสมาชิก XM
-                  </button>
+                    className="inline-flex items-center rounded-xl px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-[0_8px_28px_rgba(244,63,94,.35)] transition"
+                  />
                 </div>
               </div>
 
-              {/* XM POPUP (ธีมแดง) */}
-              <AnimatePresence>
-                {xmOpen && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-                    onClick={() => setXmOpen(false)}
-                  >
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.98, y: 8 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.98, y: 8 }}
-                      transition={{ type: "spring", stiffness: 220, damping: 22 }}
-                      className="w-full max-w-lg rounded-2xl overflow-hidden relative"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* พื้นหลัง/กราเดียนต์โทนแดง */}
-                      <div className="relative p-6 md:p-8 bg-white/[0.04] border border-white/10">
-                        <div className="pointer-events-none absolute -inset-6 md:-inset-8 -z-10 rounded-3xl
-                                        bg-[radial-gradient(60%_50%_at_10%_10%,rgba(255,0,0,.18),transparent_70%),radial-gradient(60%_50%_at_90%_90%,rgba(255,70,70,.22),transparent_70%)]" />
-                        <h4 className="text-2xl font-extrabold">รับสิทธิ์ฟรีสำหรับสมาชิก XM</h4>
-                        <p className="opacity-80 mt-2">
-                          สำหรับลูกค้า XM รับสิทธิ์ใช้งานเครื่องมือได้ฟรีตามเงื่อนไขที่กำหนด
-                          กรอกอีเมลของคุณเพื่อรับลิงก์เปิดใช้สิทธิ์
-                        </p>
-
-                        {/* ฟอร์ม (แสดง Toast เมื่อส่งสำเร็จ) */}
-                        <form
-                          className="mt-5 flex flex-col gap-3"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            setXmOpen(false);
-                            toast({
-                              title: "ส่งคำขอแล้ว",
-                              description: "ทีมงานจะติดต่อกลับทางอีเมลครับ",
-                              variant: "success",
-                            });
-                          }}
-                        >
-                          <input
-                            type="email"
-                            required
-                            placeholder="กรอกอีเมลของคุณ"
-                            className="w-full rounded-xl bg-black/60 border border-white/15 px-4 py-3
-                                       outline-none focus:ring-2 focus:ring-rose-500"
-                          />
-                          <div className="flex gap-3">
-                            <button
-                              type="submit"
-                              className="inline-flex items-center rounded-xl px-4 py-2
-                                         bg-rose-600 hover:bg-rose-500 text-white font-semibold
-                                         shadow-[0_8px_28px_rgba(244,63,94,.35)] transition"
-                            >
-                              รับโค้ดสิทธิ์ใช้งาน
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setXmOpen(false)}
-                              className="inline-flex items-center rounded-xl px-4 py-2
-                                         bg-white/10 hover:bg-white/15"
-                            >
-                              ปิด
-                            </button>
-                          </div>
-                          <p className="text-xs opacity-70">
-                            * เงื่อนไขเป็นไปตามที่บริษัทกำหนด
-                          </p>
-                        </form>
-                      </div>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* ป็อปอัพ XM (ใช้ตัวกลางเดียว) */}
+              <XMClaimModal
+                open={xmOpen}
+                onClose={() => setXmOpen(false)}
+                page={pathname || ""}
+                source={`catalog:${item?.title || ""}`}
+              />
             </motion.div>
           </div>
         </motion.div>

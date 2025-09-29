@@ -3,64 +3,92 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { useMemo } from "react";
 import type { CatalogItem } from "@/data/types";
-import clsx from "clsx";
 
-type CatalogCardProps = {
+type Variant = "default" | "ebook" | "indicator";
+
+export default function CatalogCard({
+  item,
+  onOpen,
+  variant = "default",
+}: {
   item: CatalogItem;
-  onOpen?: (item: CatalogItem) => void;
-  /** สัดส่วนรูปปก: default = wide(16/9), tall = แนวตั้งสำหรับ ebook */
-  coverAspect?: "wide" | "tall";
-};
+  onOpen?: (it: CatalogItem) => void;
+  variant?: Variant;
+}) {
+  // อัตราส่วนภาพ
+  const imageWrapClass =
+    variant === "ebook"
+      ? "relative w-full aspect-[3/4] overflow-hidden rounded-t-2xl"
+      : "relative w-full aspect-[16/9] overflow-hidden rounded-t-2xl";
 
-export default function CatalogCard({ item, onOpen, coverAspect = "wide" }: CatalogCardProps) {
-  const isTall = coverAspect === "tall";
+  const imageClass = "object-cover";
+
+  // กำหนดปลายทางของปุ่ม "ดูรายละเอียด" สำหรับการ์ดประเภทอินดิเคเตอร์
+  // - GOLDFLOW   -> /indicators/goldflow
+  // - Boost Cap I -> /indicators/boost-capital
+  const indicatorDetailHref = useMemo(() => {
+    if (variant !== "indicator") return "#";
+    const key = (item as any)?.slug ?? item.title ?? "";
+    const t = String(key).toLowerCase();
+
+    if (t.includes("boost-capital") || t.includes("boost") || t.includes("bci")) {
+      return "/indicators/boost-capital";
+    }
+    // default = goldflow
+    return "/indicators/goldflow";
+  }, [variant, item]);
+
+  // ซ่อนปุ่ม "ดูรายละเอียด" เฉพาะการ์ดอินดิเคเตอร์ตัวที่ 3 (LT Intelligence)
+  const hideDetailButton = useMemo(() => {
+    const key = (item as any)?.slug ?? item.title ?? "";
+    const t = String(key).toLowerCase();
+    // รองรับทั้งชื่อและ slug
+    return t.includes("lt intelligence") || t.includes("lt-intelligence");
+  }, [item]);
 
   return (
-    <article className="glass rounded-2xl overflow-hidden border border-white/10 flex flex-col">
-      {/* รูปปก */}
-      <div
-        className={clsx(
-          "relative w-full",
-          // wide = 16/9 (default), tall = 3/4 สำหรับ ebook
-          isTall ? "aspect-[3/4]" : "aspect-[16/9]"
-        )}
-      >
+    <article className="group rounded-2xl overflow-hidden bg-white/[0.04] border border-white/10 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+      {/* ภาพ */}
+      <div className={imageWrapClass}>
         <Image
           src={item.cover}
           alt={item.title}
           fill
-          className="object-cover"
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className={imageClass}
+          sizes="(min-width:1024px) 33vw, 100vw"
           priority={false}
         />
       </div>
 
       {/* เนื้อหา */}
-      <div className="p-4 md:p-5 flex flex-col gap-3 grow">
-        <h3 className="font-semibold text-lg leading-snug">{item.title}</h3>
-        {item.summary ? (
-          <p className="text-sm text-white/75 line-clamp-2">{item.summary}</p>
-        ) : null}
+      <div className="p-6">
+        <h3 className="text-xl md:text-2xl font-extrabold leading-tight">
+          {item.title}
+        </h3>
+        <p className="mt-2 text-white/70 line-clamp-2">{item.summary}</p>
 
-        {/* ปุ่ม */}
-        <div className="mt-auto flex items-center gap-3 pt-2">
+        {/* ปุ่มของการ์ด */}
+        <div className="mt-5 flex items-center gap-3">
+          {/* อ่านเพิ่มเติม (เปิดโมดัล) */}
           <button
-            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 transition text-sm"
             onClick={() => onOpen?.(item)}
+            className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 transition"
           >
-            ดูรายละเอียด
+            อ่านเพิ่มเติม
           </button>
 
-          {item.website ? (
+          {/* อินดิเคเตอร์: ปุ่ม 'ดูรายละเอียด' → ซ่อนเฉพาะ LT Intelligence */}
+          {variant === "indicator" && !hideDetailButton && (
             <Link
-              href={item.website}
-              target="_blank"
-              className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 transition text-sm inline-flex items-center gap-2"
+              href={indicatorDetailHref}
+              className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 inline-flex items-center gap-2 transition"
+              aria-label={`ดูรายละเอียด ${item.title}`}
             >
-              เว็บไซต์ <ExternalLink className="w-4 h-4" />
+              ดูรายละเอียด <ExternalLink className="h-4 w-4" />
             </Link>
-          ) : null}
+          )}
         </div>
       </div>
     </article>

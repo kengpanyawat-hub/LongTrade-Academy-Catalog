@@ -3,26 +3,41 @@ export type UpskillBlock = {
   title: string;
   text: string;
   bullets: string[];
-  image: string;     // เปลี่ยนเป็นรูปจริงภายหลังได้
+  image: string; // URL ของรูป
 };
 
 export const upskill: UpskillBlock[] = [
   {
-    title: "พื้นฐานแน่น",
-    text: "เข้าใจโครงสร้างตลาด การจัดการความเสี่ยง และวินัยการเทรด",
-    bullets: ["Market Structure", "Risk/Reward", "Trading Plan"],
-    image: "https://picsum.photos/seed/upskill1/900/600"
+    title: "วางรากฐานใหม่ให้การเทรด",
+    text:
+      "เริ่มต้นกับ Longtrade Academy เปิดโลกการเทรดอย่างถูกต้อง เรียนตั้งแต่พื้นฐานที่มือใหม่ต้องรู้ จัดระบบความคิด การบริหารเงิน และการวางแผน เพื่อสร้างเส้นทางเทรดที่มั่นคง",
+    bullets: [
+      "รู้จักตลาดและจังหวะที่เหมาะสม",
+      "จัดการเงินทุนและความเสี่ยงอย่างเป็นระบบ",
+      "สร้างกรอบคิดที่มืออาชีพใช้จริง",
+    ],
+    image: "/upskills/trading_luxury_1.png",
   },
   {
-    title: "กลยุทธ์ทำกำไร",
-    text: "นำเครื่องมือและอินดิเคเตอร์มาผสานกับ Price Action",
-    bullets: ["Trend/Range Playbook", "Confluence Signals", "Backtest Mindset"],
-    image: "https://picsum.photos/seed/upskill2/900/600"
+    title: "สร้างระบบทำกำไร",
+    text:
+      "เป็นสมาชิกกับเรา คุณจะได้มากกว่าเทคนิค เรียนรู้กลยุทธ์และเครื่องมือที่ผ่านการพิสูจน์จริง ฝึกวิเคราะห์ราคา มองหาสัญญาณที่แม่นยำ และวางระบบเทรดที่สอดคล้องกับตัวคุณ",
+    bullets: [
+      "เทคนิคจับจังหวะตลาดได้ผลจริง",
+      "กลยุทธ์วิเคราะห์กราฟที่เข้าใจง่าย",
+      "ฝึกทดสอบระบบก่อนใช้จริง",
+    ],
+    image: "/upskills/trading_luxury_2.png",
   },
   {
-    title: "ลงมือจริงอย่างมั่นใจ",
-    text: "จากแผนสู่การปฏิบัติ พร้อมเช็กไทม์ไลน์และรีวิวผลลัพธ์",
-    bullets: ["Checklist ก่อนเข้าเทรด", "Post-trade Review", "Continuous Improvement"],
-    image: "https://picsum.photos/seed/upskill3/900/600"
-  }
+    title: "เทรดอย่างมั่นใจ พัฒนาไม่หยุด",
+    text:
+      "เมื่อเป็นสมาชิก Longtrade Academy คุณจะไม่เทรดอย่างโดดเดี่ยวอีกต่อไป มีแผนการฝึกจริง เครื่องมือสนับสนุน และการรีวิวผลลัพธ์เพื่อปรับปรุงต่อเนื่อง",
+    bullets: [
+      "คู่มือและเช็กลิสต์ก่อนเข้าเทรด",
+      "รีวิวผลลัพธ์หลังเทรดทุกครั้ง",
+      "พัฒนาทักษะต่อเนื่อง พร้อมคำแนะนำจากผู้เชี่ยวชาญ",
+    ],
+    image: "/upskills/trading_luxury_3.png",
+  },
 ];

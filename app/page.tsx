@@ -9,13 +9,16 @@ import { catalog } from "@/data/catalog";
 import WhyUs from "@/components/WhyUs";
 import Upskill from "@/components/Upskill";
 // app/page.tsx (เฉพาะส่วนที่เพิ่ม)
-import UseCases from "@/components/UseCases";
+import CosmicBackground from "@/components/CosmicBackground";
+import Reveal from "@/components/Reveal";
 
 export default function Page() {
   return (
     <main>
       <Background />
+	  <CosmicBackground className="p-8 md:p-12 my-8">
       <Navbar />
+	  <Reveal>
       <Hero />
       <SubHero />
       <div id="catalog" className="container-narrow py-12">
@@ -27,11 +30,12 @@ export default function Page() {
       </div>
 	  <WhyUs />
 	  <Upskill />
-	  <UseCases />   {/* << เพิ่มส่วน Use-cases / Playbook */}
+	  </Reveal>
 
 	  <div id="catalog" className="container-narrow py-12">
 	    {/* CatalogSection ... */}
 	  </div>
+	  </CosmicBackground>
       <Footer />
     </main>
   );

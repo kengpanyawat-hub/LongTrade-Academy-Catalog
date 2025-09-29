@@ -3,19 +3,79 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { SUPPORT_LINKS, type SupportLinkKind } from "@/config/supportLinks";
 import { QUICK_REPLIES, getBotReply } from "@/config/botFaq";
 import {
   MessageCircle,
   Link2,
   X,
   Facebook,
-  Instagram,
   Youtube,
   Globe,
   SendHorizonal,
   Sparkles,
 } from "lucide-react";
+
+/** ----------------------------------------------------------------
+ *  Local types & helpers (ไม่พึ่งพาไฟล์ config เดิม เพื่อลดผลกระทบ)
+ *  ---------------------------------------------------------------*/
+type SupportLinkKind = "fb" | "line" | "yt" | "web" | "promo";
+
+type LinkItem =
+  | {
+      label: string;
+      href: string;
+      external?: boolean;
+      kind: Exclude<SupportLinkKind, "promo">; // ใช้ไอคอนจาก lucide
+      img?: undefined;
+    }
+  | {
+      label: string;
+      href: string;
+      external?: boolean;
+      kind: "promo"; // ใช้เป็นภาพ (เช่น LT/XM)
+      img: string;   // URL รูป 1:1
+    };
+
+/** ลำดับและลิ้งก์ตามที่ผู้ใช้ต้องการ */
+const LINKS: ReadonlyArray<LinkItem> = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/LongTradeAcademy",
+    external: true,
+    kind: "fb",
+  },
+  {
+    label: "LINE",
+    href: "https://lin.ee/oqfUFhG",
+    external: true,
+    kind: "line",
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@AcademyLongtrade",
+    external: true,
+    kind: "yt",
+  },
+  {
+    label: "Website",
+    href: "https://longtrade-academy.com/",
+    external: true,
+    kind: "web",
+  },
+  // ใช้รูปภาพเป็นไอคอน
+  {
+    label: "สิทธิพิเศษ",
+    href: "/promo#lt",
+    kind: "promo",
+    img: "https://ik.imagekit.io/pcqgvgpgi1/LTlogo.jpg",
+  },
+  {
+    label: "โปรโมชั่น XM",
+    href: "/promo#xm",
+    kind: "promo",
+    img: "https://ik.imagekit.io/pcqgvgpgi1/XMlogo.jpg",
+  },
+];
 
 function LineIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -24,13 +84,18 @@ function LineIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-function LinkIconSwitch({ kind, className }: { kind: SupportLinkKind; className?: string }) {
+
+function LinkIconSwitch({
+  kind,
+  className,
+}: {
+  kind: Exclude<SupportLinkKind, "promo">;
+  className?: string;
+}) {
   const common = "h-4 w-4";
   switch (kind) {
     case "fb":
       return <Facebook className={clsx(common, className)} />;
-    case "ig":
-      return <Instagram className={clsx(common, className)} />;
     case "yt":
       return <Youtube className={clsx(common, className)} />;
     case "web":
@@ -60,7 +125,8 @@ export default function SupportWidget() {
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (!open) return;
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
+      if (panelRef.current && !panelRef.current.contains(e.target as Node))
+        setOpen(false);
     }
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
@@ -93,13 +159,12 @@ export default function SupportWidget() {
       {open && (
         <div
           ref={panelRef}
-          // ป้องกัน wheel เด้งไปเลื่อนหน้าเว็บด้านหลัง
           onWheelCapture={(e) => e.stopPropagation()}
           className={clsx(
             "fixed z-[9999] bottom-24 right-5 w-[360px] max-w-[88vw]",
             "rounded-2xl overflow-hidden border border-white/10",
             "bg-neutral-950/90 backdrop-blur-md shadow-2xl",
-            "overscroll-contain" // กัน scroll-chaining
+            "overscroll-contain"
           )}
         >
           <div className="relative p-4 bg-gradient-to-r from-rose-700/30 to-rose-500/10 border-b border-white/10">
@@ -123,7 +188,9 @@ export default function SupportWidget() {
                 onClick={() => setTab("links")}
                 className={clsx(
                   "flex-1 rounded-full py-2 text-sm font-medium",
-                  tab === "links" ? "bg-rose-600 text-white" : "text-white/80 hover:text-white"
+                  tab === "links"
+                    ? "bg-rose-600 text-white"
+                    : "text-white/80 hover:text-white"
                 )}
               >
                 ลิงก์ด่วน
@@ -132,7 +199,9 @@ export default function SupportWidget() {
                 onClick={() => setTab("bot")}
                 className={clsx(
                   "flex-1 rounded-full py-2 text-sm font-medium",
-                  tab === "bot" ? "bg-rose-600 text-white" : "text-white/80 hover:text-white"
+                  tab === "bot"
+                    ? "bg-rose-600 text-white"
+                    : "text-white/80 hover:text-white"
                 )}
               >
                 แชตบอท
@@ -143,15 +212,26 @@ export default function SupportWidget() {
           <div className="p-3">
             {tab === "links" ? (
               <div className="grid grid-cols-2 gap-3">
-                {SUPPORT_LINKS.map((l) => (
+                {LINKS.map((l) => (
                   <Link
-                    key={l.href}
+                    key={l.label + l.href}
                     href={l.href}
-                    target="_blank"
+                    target={l.external ? "_blank" : undefined}
                     className="group glass rounded-xl p-3 border border-white/10 hover:border-white/20 inline-flex items-center gap-2"
                   >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 text-rose-400 group-hover:bg-rose-600/30">
-                      <LinkIconSwitch kind={l.kind} />
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 text-rose-400 group-hover:bg-rose-600/30 overflow-hidden">
+                      {l.kind === "promo" && l.img ? (
+                        // ใช้รูปภาพเป็นไอคอนสำหรับ LT/XM
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={l.img}
+                          alt=""
+                          className="h-5 w-5 rounded-[6px] object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <LinkIconSwitch kind={l.kind as Exclude<SupportLinkKind, "promo">} />
+                      )}
                     </span>
                     <span className="font-medium">{l.label}</span>
                   </Link>
@@ -162,8 +242,8 @@ export default function SupportWidget() {
               </div>
             ) : (
               <div
-                className="flex flex-col h-[400px] overscroll-contain" // กัน scroll-chaining
-                onWheelCapture={(e) => e.stopPropagation()}           // กัน wheel ทะลุ
+                className="flex flex-col h-[400px] overscroll-contain"
+                onWheelCapture={(e) => e.stopPropagation()}
               >
                 <div className="flex gap-2 flex-wrap mb-2">
                   {QUICK_REPLIES.map((q) => (
@@ -177,7 +257,6 @@ export default function SupportWidget() {
                   ))}
                 </div>
 
-                {/* กล่องสนทนา: เลื่อนด้วยล้อเมาส์ได้เลย */}
                 <div
                   className="flex-1 overflow-y-auto space-y-2 pr-1 overscroll-contain"
                   onWheelCapture={(e) => e.stopPropagation()}

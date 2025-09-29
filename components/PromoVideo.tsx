@@ -11,7 +11,7 @@ export default function PromoVideo() {
 
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
           <video
-            src="https://ik.imagekit.io/pcqgvgpgi1/playback-1.mp4"
+            src="https://ik.imagekit.io/pcqgvgpgi1/goldflow.mp4"
             autoPlay
             muted
             loop
