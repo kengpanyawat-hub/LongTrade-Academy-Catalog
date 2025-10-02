@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import CatalogSection from "@/components/CatalogSection";
 import { catalog } from "@/data/catalog";
 import type { CatalogItem } from "@/data/types";
+import { XMClaimButton, XMClaimModal } from "@/components/Modals";
 
 const map: Record<string, { title: string; items: ReadonlyArray<CatalogItem> }> = {
   indicators: { title: "อินดิเคเตอร์ทั้งหมด", items: catalog.indicators },
