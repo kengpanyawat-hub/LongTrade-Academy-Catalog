@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import CatalogCard from "./CatalogCard";
-import DetailModal from "./DetailModal";
+import XMClaimModal from "@/components/XMClaimModal"
 import SectionHeader from "./Section";
 import type { CatalogItem } from "@/data/types";
 
