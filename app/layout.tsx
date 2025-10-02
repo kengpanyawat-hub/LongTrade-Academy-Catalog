@@ -6,6 +6,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import { ToastProvider } from "@/components/Toast";
 import SupportWidget from "@/components/SupportWidget";
 import Footer from "@/components/Footer";
+import { XMClaimModal } from "@/components/Modals";
 
 const prompt = Prompt({ subsets: ["thai","latin"], weight: ["300","400","600","700"] });
 const SITE_URL = "https://longtrade-catalog.vercel.app"; // <- โดเมนโปรดักชันของคุณ
