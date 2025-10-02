@@ -69,6 +69,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SmoothScroll />
 		<ToastProvider>
         {children}
+		<XMClaimModal />
 		</ToastProvider>
 		{/* Floating Intercom-style widget: แสดงทุกหน้า */}
         <SupportWidget />
