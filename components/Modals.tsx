@@ -109,7 +109,7 @@ export function XMClaimModal() {
 
   const submit = async () => {
     if (!GAS_EP) {
-      toast({ title: "Endpoint ไม่ถูกตั้งค่า", variant: "destructive" });
+      toast({ title: "Endpoint ไม่ถูกตั้งค่า", variant: "error" });
       return;
     }
 
@@ -123,7 +123,7 @@ export function XMClaimModal() {
     };
 
     if (!payload.name || !payload.email) {
-      toast({ title: "กรอกชื่อและอีเมลก่อนนะ", variant: "destructive" });
+      toast({ title: "กรอกชื่อและอีเมลก่อนนะ", variant: "error" });
       return;
     }
 
@@ -170,7 +170,7 @@ export function XMClaimModal() {
       toast({
         title: "ส่งไม่สำเร็จ",
         description: err?.message || "Failed to fetch",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setLoading(false);
