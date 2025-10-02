@@ -48,10 +48,7 @@ export default function CatalogSection({
       </div>
 
       {/* แสดงโมดัลเมื่อมี item เท่านั้น */}
-      {open && (
-        // @ts-expect-error – ใช้ข้าม error typing ชั่วคราวของ DetailModal ในโปรเจ็กต์นี้
-        <DetailModal item={open} onClose={() => setOpen(null)} />
-      )}
+      {open && <DetailModal item={open} onClose={() => setOpen(null)} />}
     </section>
   );
 }
