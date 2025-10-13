@@ -7,6 +7,8 @@ import VideoPlayer from "@/components/VideoPlayer";
 import Image from "next/image";
 import Link from "next/link";
 import { useToast } from "@/components/Toast";
+import { XMClaimModal } from "@/components/Modals";
+
 
 /* ----------------------------- Fallback (local) ---------------------------- */
 const REVIEWS: { text: string; name: string }[] = [

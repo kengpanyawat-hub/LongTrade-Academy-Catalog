@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import CatalogCard from "./CatalogCard";
-import DetailModal from "./DetailModal";
 import SectionHeader from "./Section";
 import type { CatalogItem } from "@/data/types";
+import { DetailModal } from "@/components/Modals";  // <- ใช้จากไฟล์รวม
 
 type Variant = "default" | "ebook" | "indicator";
 
@@ -22,25 +22,23 @@ export default function CatalogSection({
 }) {
   const [open, setOpen] = useState<CatalogItem | null>(null);
 
-  // เดา variant จากหัวข้อ (ไม่แคร์ตัวพิมพ์เล็ก/ใหญ่)
-  const t = title.toLowerCase();
+  // ถ้าไม่ได้ส่ง variant มา พยายามเดาจากหัวข้อ
   const computedVariant: Variant =
     variant ??
-    (t.includes("ebook")
+    (title.includes("Ebook")
       ? "ebook"
-      : t.includes("อินดิเคเตอร์")
+      : title.includes("อินดิเคเตอร์")
       ? "indicator"
       : "default");
 
   return (
     <section className="mb-16">
       <SectionHeader title={title} href={href} />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((it, idx) => (
           <CatalogCard
-            key={idx}
             item={it}
+            key={idx}
             onOpen={setOpen}
             variant={computedVariant}
           />
@@ -48,10 +46,7 @@ export default function CatalogSection({
       </div>
 
       {/* แสดงโมดัลเมื่อมี item เท่านั้น */}
-      {open && (
-        // @ts-expect-error – ใช้ข้าม error typing ชั่วคราวของ DetailModal ในโปรเจ็กต์นี้
-        <DetailModal item={open} onClose={() => setOpen(null)} />
-      )}
+      {open && <DetailModal item={open} onClose={() => setOpen(null)} />}
     </section>
   );
 }

@@ -98,9 +98,16 @@ export default function Navbar() {
   return (
     <div className="fixed top-4 left-4 right-4 z-50">
       <nav className="nav-shell px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="font-extrabold tracking-wide text-xl">
+        {/* โลโก้: ลิงก์ไป longtradeacademy.com ในแท็บใหม่ */}
+        <a
+          href="https://www.longtradeacademy.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-extrabold tracking-wide text-xl hover:opacity-90"
+          aria-label="Longtrade Academy (เปิดแท็บใหม่)"
+        >
           <span className="text-brand">LONGTRADE</span> ACADEMY
-        </Link>
+        </a>
 
         {/* Desktop */}
         <div className="hidden lg:flex items-center gap-3">
@@ -150,9 +157,16 @@ export default function Navbar() {
             className="mx-auto mt-20 max-w-2xl nav-overlay p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2 text-xl font-extrabold mb-4">
+            {/* โลโก้ใน drawer: ลิงก์ภายนอกเช่นกัน */}
+            <a
+              href="https://www.longtradeacademy.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xl font-extrabold mb-4 hover:opacity-90"
+              aria-label="Longtrade Academy (เปิดแท็บใหม่)"
+            >
               <span className="text-brand">Long</span>trade Academy
-            </div>
+            </a>
 
             <div className="grid gap-3">
               {menus.map((label) => {

@@ -61,7 +61,7 @@ export const catalog = {
     {
       "title": "LT Intelligence",
       "summary": "เครื่องมือช่วยเทรดอัจฉริยะ",
-      "cover": "https://ik.imagekit.io/pcqgvgpgi1/gf_product.jpg?updatedAt=1758385250393",
+      "cover": "/indicator/LTIntelligence/LTfull.jpg",
       "website": "https://www.longtradeacademy.com/",
       "facebook": "https://www.facebook.com/longtradeacademy",
       "samples": [],
@@ -405,9 +405,9 @@ export const catalog = {
 ],
   "courses": [
     {
-  "title": "STOCHASTIC POP",
-  "summary": "POP แล้วไป! จังหวะไว กำไรแรง – กลยุทธ์จับ Momentum ระเบิดพลังด้วย Stochastic",
-  "cover": "https://ik.imagekit.io/pcqgvgpgi1/course3.jpg?updatedAt=1757704339779",
+  "title": "One day Gold Trading",
+  "summary": "คอร์สเร่งรัดเทรดทองเป็นใน 1 วัน",
+  "cover": "/courses/courses1.jpg",
   "website": "https://www.longtradeacademy.com/",
   "facebook": "https://www.facebook.com/longtradeacademy",
   "samples": [],
@@ -434,9 +434,9 @@ export const catalog = {
   }
 },
 {
-  "title": "กลยุทธ์ MACS – “สร้างแผนเทรดให้ชนะตลาด”",
-  "summary": "คอร์ส MACS (Moving Average Channel Strategy): สร้างแผนเทรดที่ใช้งานได้จริงอย่างเป็นระบบ",
-  "cover": "https://ik.imagekit.io/pcqgvgpgi1/course1.jpg?updatedAt=1757704339690",
+  "title": "เทคนิคการเทรดท่า 30MBO",
+  "summary": "เรียบง่ายแต่ทรงพลัง",
+  "cover": "/courses/courses2.jpg",
   "website": "https://www.longtradeacademy.com/",
   "facebook": "https://www.facebook.com/longtradeacademy",
   "samples": [],
@@ -463,9 +463,9 @@ export const catalog = {
   }
 },
     {
-  "title": "30-Minute Breakout (30MBO)",
-  "summary": "จับจังหวะเบรกเอาท์ใน 30 นาที — เรียบง่าย ชัดเจน ใช้ได้จริง",
-  "cover": "/art3.jpg",
+  "title": "Stochastic Pop",
+  "summary": "จังหวะไว กำไรแรง",
+  "cover": "/courses/courses3.jpg",
   "website": "https://www.longtradeacademy.com/",
   "facebook": "https://www.facebook.com/longtradeacademy",
   "samples": [],

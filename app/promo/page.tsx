@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
+import { XMClaimModal } from "@/components/Modals";
 
 // เดิมเคยดึงจาก CMS – ตอนนี้ถอดออกแล้ว ให้คืนค่าว่างไว้เป็น placeholder
 async function loadPromosFromCMS(): Promise<{ xm: Promo[]; lt: Promo[] }> {

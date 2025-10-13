@@ -58,7 +58,7 @@ const LINKS: ReadonlyArray<LinkItem> = [
   },
   {
     label: "Website",
-    href: "https://longtrade-academy.com/",
+    href: "https://www.longtradeacademy.com/",
     external: true,
     kind: "web",
   },
