@@ -307,7 +307,7 @@ export const courses: ReadonlyArray<Course> = [
   },
 
   {
-    slug: "กลยุทธ์ MACS – “สร้างแผนเทรดให้ชนะตลาด",
+    slug: "MACS",
     title: "กลยุทธ์ MACS – “สร้างแผนเทรดให้ชนะตลาด",
     cover: "/courses/courses4.jpg",
     hours: "2 ชั่วโมง 30 นาที",
