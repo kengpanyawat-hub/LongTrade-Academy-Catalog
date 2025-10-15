@@ -173,7 +173,7 @@ export const courses: ReadonlyArray<Course> = [
         lessons: [L({ id: "l9", title: "Mindset ที่จำเป็นในการเทรด", duration: "11.20 นาที", videoId: "https://youtu.be/7qR_rf7EpFI" })],
       },
     ],
-    unlockCode: "One-Day-Gold-Trading",
+    unlockCode: "LT-98989",
     quiz: {
       passingScore: 70,
       questions: [
@@ -236,7 +236,7 @@ export const courses: ReadonlyArray<Course> = [
       { id: "p-sec7", title: "7.ตลาดที่เหมาะสมกับท่าเทรดนี้", lessons: [L({ id: "p7", title: "ตลาดที่เหมาะสมกับท่าเทรดนี", duration: "10 นาที", videoId: "https://youtu.be/ObySniX37n0" })] },
       { id: "p-sec8", title: "8.Case study ท่าเทรด 30MBO", lessons: [L({ id: "p8", title: "Case study ท่าเทรด 30MBO", duration: "10 นาที", videoId: "https://youtu.be/hTmIBf4dGEc" })] },
     ],
-    unlockCode: "Technic-30MBO",
+    unlockCode: "LT-46466",
     quiz: {
       passingScore: 70,
       questions: [
@@ -286,7 +286,7 @@ export const courses: ReadonlyArray<Course> = [
       { id: "dm6", title: "กลยุทธ์ที่แนะนำเพิ่มเติม", lessons: [L({ id: "dm1-6", title: "กลยุทธ์ที่แนะนำเพิ่มเติม", duration: "15 นาที", videoId: "dQw4w9WgXcQ" })] },
       { id: "dm7", title: "ตลาดที่เหมาะสมสำหรับการเทรดท่า SP", lessons: [L({ id: "dm1-7", title: "ตลาดที่เหมาะสมสำหรับการเทรดท่า SP", duration: "15 นาที", videoId: "https://youtu.be/KHiKrag2TmI" })] },
     ],
-    unlockCode: "Stochastic-Pop-Pop",
+    unlockCode: "LT-19655",
     quiz: {
       passingScore: 70,
       questions: [
@@ -325,7 +325,7 @@ export const courses: ReadonlyArray<Course> = [
       { id: "MA7", title: "7.สิ่งที่ควรรู้ในการใช้ท่าเทรดนี้", lessons: [L({ id: "p7", title: "สิ่งที่ควรรู้ในการใช้ท่าเทรดนี้", duration: "10 นาที", videoId: "https://youtu.be/ObySniX37n0" })] },
       { id: "MA8", title: "8.Case study ท่าเทรด MACS", lessons: [L({ id: "p8", title: "Case study ท่าเทรด MACS", duration: "10 นาที", videoId: "https://youtu.be/hTmIBf4dGEc" })] },
     ],
-    unlockCode: "MACS-2025-OK",
+    unlockCode: "LT-88887",
     quiz: {
       passingScore: 70,
       questions: [
@@ -368,7 +368,7 @@ export const courses: ReadonlyArray<Course> = [
       { id: "MA11", title: "11.ความผิดพลาดใหญ่ที่อาจทำให้คุณเสียเงินมากมาย", lessons: [L({ id: "p11", title: "ความผิดพลาดใหญ่ที่อาจทำให้คุณเสียเงินมากมาย", duration: "10 นาที", videoId: "https://youtu.be/ObySniX37n0" })] },
       { id: "MA12", title: "12.เครื่องมือฟีโบนัชชีที่ทรงพลังในการเทรดจริง", lessons: [L({ id: "p12", title: "เครื่องมือฟีโบนัชชีที่ทรงพลังในการเทรดจริง", duration: "10 นาที", videoId: "https://youtu.be/hTmIBf4dGEc" })] },
     ],
-    unlockCode: "FIBONACCI-MASTERCLASS",
+    unlockCode: "LT-64646",
     quiz: {
       passingScore: 70,
       questions: [
@@ -514,7 +514,7 @@ export const courses: ReadonlyArray<Course> = [
         ],
       },
     ],
-    unlockCode: "CB-2025-OK",
+    unlockCode: "LT-25939",
     quiz: {
       passingScore: 70,
       questions: [
