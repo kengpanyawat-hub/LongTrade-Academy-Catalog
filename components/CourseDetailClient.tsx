@@ -96,6 +96,9 @@ export default function CourseDetailClient({ course }: Props) {
     setCode((s) => s);
   };
 
+  // รองรับ instructor.avatar แบบไม่ชน type เดิม
+  const avatar = (course as any)?.instructor?.avatar as string | undefined;
+
   return (
     <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* LEFT */}
@@ -107,14 +110,20 @@ export default function CourseDetailClient({ course }: Props) {
               <PlayIcon /> {course.hours}
             </span>
             <span className="inline-flex items-center gap-2">
-              <CheckIcon /> {doneCount}/{totalLessons} บทเรียน
+              <CheckIcon />
+              {mounted ? (
+                <span>{doneCount}</span>
+              ) : (
+                <span suppressHydrationWarning>0</span>
+              )}
+              /{totalLessons} บทเรียน
             </span>
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            {course.instructor.avatar ? (
+            {avatar ? (
               <Image
-                src={course.instructor.avatar}
+                src={avatar}
                 alt={course.instructor.name}
                 width={40}
                 height={40}
@@ -184,7 +193,7 @@ export default function CourseDetailClient({ course }: Props) {
                       </div>
                     );
 
-                    // ป้องกัน Hydration: ตอน SSR เป็น <div> เสมอ, หลัง mounted&unlocked ค่อยเป็น <Link>
+                    // ป้องกัน Hydration: SSR เป็น <div>, หลัง mounted & unlocked ค่อยเป็น <Link>
                     return (
                       <li key={ls.id}>
                         {mounted && unlocked ? (
@@ -229,7 +238,7 @@ export default function CourseDetailClient({ course }: Props) {
           )}
         </div>
 
-        {/* ปุ่มไปหน้าแบบทดสอบ (แสดงเมื่อปลดล็อกและเรียนครบทุกบท) */}
+        {/* ปุ่มไปหน้าแบบทดสอบ */}
         {allDone && (
           <div className="glass rounded-2xl p-4 border border-white/10 flex items-center justify-between">
             <div>
@@ -251,7 +260,9 @@ export default function CourseDetailClient({ course }: Props) {
       {/* RIGHT */}
       <aside className="lg:col-span-4">
         <div className="rounded-2xl border border-white/10 p-5 glass">
-          <div className="text-3xl font-extrabold">฿{course.price.toLocaleString()}</div>
+          <div className="text-3xl font-extrabold">
+            ฿{course.price.toLocaleString()}
+          </div>
           {course.originalPrice && (
             <div className="text-sm text-white/60 line-through">
               ฿{course.originalPrice.toLocaleString()}
