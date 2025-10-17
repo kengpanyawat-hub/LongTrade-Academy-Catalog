@@ -1,92 +1,325 @@
 // app/courses/[slug]/quiz/page.tsx
-import { courses } from "@/data/courses";
-import QuizClient, {
-  type QuizQuestion as ClientQuizQuestion,
-} from "./QuizClient";
 import Navbar from "@/components/Navbar";
+import { courses } from "@/data/courses";
+import QuizClient, { type QuizQuestion } from "./QuizClient";
 
 type Params = { params: { slug: string } };
 
-// แปลงรูปแบบข้อสอบจาก data/courses → รูปแบบที่ QuizClient ต้องการ
-function toClientQuestions(
-  raw:
-    | {
-        id: string;
-        title: string;
-        q?: string | { label: string };
-        choices: { id: string; label: string }[];
-        answerId: string;
-      }[]
-    | undefined
-): ClientQuizQuestion[] {
-  if (!raw || !raw.length) return [];
-  return raw.map((q) => {
-    const questionText =
-      typeof q.q === "string"
-        ? q.q
-        : q.q?.label || q.title || "คำถาม";
-
-    const choices = q.choices.map((c) => c.label);
-
-    // หา index ของช้อยส์ที่ถูกต้องจาก answerId
-    let answerIndex = q.choices.findIndex((c) => c.id === q.answerId);
-    if (answerIndex < 0) answerIndex = 0; // กันกรณีข้อมูลผิด
-
-    const clientQ: ClientQuizQuestion = {
-      q: questionText,
-      choices,
-      answer: answerIndex, // QuizClient รองรับเป็น index ได้
-    };
-    return clientQ;
-  });
+/** ตัวช่วยสร้างข้อสอบจากรูปแบบ {ถาม, ตัวเลือก[], `idx` ของตัวเลือกที่ถูก} */
+function build(qa: Array<{ q: string; choices: string[]; correct: number }>): QuizQuestion[] {
+  return qa.map(({ q, choices, correct }) => ({
+    q,
+    choices,
+    answer: correct, // ใช้ index ของตัวเลือกที่ถูกต้อง
+  }));
 }
 
-// ข้อสอบสำรอง (กรณีคอร์สยังไม่มีข้อมูล quiz ใน data/courses)
-const FALLBACK_QUESTIONS: ClientQuizQuestion[] = [
-  {
-    q: "หัวใจของการพัฒนาเว็บแบบ Full-Stack คืออะไร?",
-    choices: ["รู้แค่ Frontend", "รู้แค่ Backend", "เข้าใจทั้งระบบตั้งแต่ UI จนถึงฐานข้อมูล"],
-    answer: 2,
-  },
-  {
-    q: "React ใช้สำหรับอะไรเป็นหลัก?",
-    choices: ["จัดการฐานข้อมูล", "สร้าง UI แบบ component", "ทำ Reverse Proxy"],
-    answer: 1,
-  },
-];
-
-export default function QuizPage({ params: { slug } }: Params) {
+export default async function QuizPage({ params: { slug } }: Params) {
   const course = courses.find((c) => c.slug === slug);
 
+  // กรณี slug ไม่ถูกต้อง
   if (!course) {
     return (
-      <main className="container-narrow py-10">
+      <>
         <Navbar />
-        <div className="mt-6 rounded-2xl border border-white/10 p-6 bg-white/[0.04]">
-          ไม่พบคอร์สที่ต้องการ
-        </div>
-      </main>
+        <main className="container-narrow pt-28 pb-16">
+          <h1 className="text-2xl md:text-3xl font-extrabold">ไม่พบคอร์ส</h1>
+          <p className="opacity-80 mt-2">กรุณากลับไปเลือกคอร์สอีกครั้ง</p>
+        </main>
+      </>
     );
   }
 
-  const questionsFromData = toClientQuestions(course.quiz?.questions);
-  const questions =
-    questionsFromData.length > 0 ? questionsFromData : FALLBACK_QUESTIONS;
+  /** ----------------------------------------------------------------
+   *  ชุดคำถามตาม 3 คอร์สแรกที่ผู้ใช้กำหนด
+   *  NOTE: เทียบด้วย course.title เพื่อความชัด (หากต้องการเปลี่ยนเป็นเทียบ slug ก็ได้)
+   *  ---------------------------------------------------------------- */
+  let questions: QuizQuestion[] | undefined;
 
-  const passScore =
-    typeof course.quiz?.passingScore === "number"
-      ? Math.ceil((course.quiz.passingScore / 100) * questions.length)
-      : Math.ceil(0.7 * questions.length); // ดีฟอลต์ 70%
+  // 1) One day Gold Trading
+  if (course.title.trim() === "One day Gold Trading - คอร์สเร่งรัดเทรดทองเป็นใน 1 วัน") {
+    questions = build([
+      {
+        q: "“เทรดทองคำออนไลน์” หมายถึงอะไร?",
+        choices: [
+          "ซื้อทองแท่งเก็บไว้จริง",
+          "ซื้อขายทองคำผ่านตลาดออนไลน์เพื่อเก็งกำไรจากราคา",
+          "แลกทองคำจริงกับนักเทรดในต่างประเทศ",
+          "ซื้อทองจากร้านทองในรูปแบบผ่อนรายเดือน",
+        ],
+        correct: 1,
+      },
+      {
+        q: "ทำไมการเทรดทองออนไลน์ถึงไม่ต้องใช้เงินเต็มจำนวนของทองจริง?",
+        choices: [
+          "เพราะโบรกเกอร์ให้เทรดฟรี",
+          "เพราะมีระบบ Leverage ที่ช่วยขยายกำลังซื้อ",
+          "เพราะราคาทองออนไลน์ถูกกว่าทองจริง",
+          "เพราะเทรดเฉพาะเวลาตลาดเอเชีย",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Margin คืออะไร?",
+        choices: [
+          "กำไรจากการเทรด",
+          "เงินค่าธรรมเนียมที่จ่ายให้โบรกเกอร์",
+          "เงินประกันที่ใช้เปิดออเดอร์เพื่อค้ำประกันการเทรด",
+          "เงินส่วนลดที่ได้จากการเปิดบัญชีเทรด",
+        ],
+        correct: 2,
+      },
+      {
+        q: "บัญชี Micro เหมาะกับใครมากที่สุด?",
+        choices: [
+          "นักลงทุนสถาบัน",
+          "เทรดเดอร์ที่ต้องการทดสอบระบบหรือมีทุนน้อย",
+          "เทรดเดอร์ที่มีทุนมากและต้องการกำไรเร็ว",
+          "ผู้ที่ไม่ต้องการใช้ Leverage",
+        ],
+        correct: 1,
+      },
+      {
+        q: "หากราคาทองกำลัง “ขาขึ้น” กลยุทธ์พื้นฐานคืออะไร?",
+        choices: [
+          "รอจังหวะ Buy เมื่อมีสัญญาณยืนยัน",
+          "รอ Sell เพราะราคาน่าจะถึงจุดสูงสุดแล้ว",
+          "หยุดเทรดจนกว่าจะกลับทิศ",
+          "ใช้ Leverage สูงที่สุด",
+        ],
+        correct: 0,
+      },
+      {
+        q: "Stop Loss มีหน้าที่อะไรในการเทรดทอง?",
+        choices: [
+          "ใช้เพิ่มขนาดสัญญา",
+          "ใช้กำหนดจุดขาดทุนสูงสุดที่ยอมรับได้",
+          "ใช้คำนวณค่า Spread",
+          "ใช้เปิดออเดอร์อัตโนมัติเมื่อราคาขึ้น",
+        ],
+        correct: 1,
+      },
+      {
+        q: "ข้อใด “ไม่ใช่” ปัจจัยที่มีผลต่อราคาทองคำในตลาดโลก?",
+        choices: [
+          "อัตราดอกเบี้ยของสหรัฐฯ",
+          "ค่าเงินดอลลาร์สหรัฐฯ (USD)",
+          "ราคาน้ำมันดิบโลก",
+          "จำนวนร้านทองในประเทศไทย",
+        ],
+        correct: 3,
+      },
+      {
+        q: "ถ้าต้องการ “ฝึกเทรด” โดยไม่ใช้เงินจริง ควรทำอย่างไร?",
+        choices: [
+          "เปิดบัญชีจริงแต่ใช้ทุนต่ำ",
+          "ใช้บัญชีทดลอง (Demo Account)",
+          "เทรดในแอปของเพื่อน",
+          "เปิดบัญชีร่วมกับคนอื่น",
+        ],
+        correct: 1,
+      },
+      {
+        q: "เทรดทอง “แบบมีแผน” ควรทำสิ่งใดก่อนกดออเดอร์?",
+        choices: [
+          "ตั้งเป้ากำไรอย่างเดียว",
+          "ดูกราฟย้อนหลังอย่างเดียว",
+          "เขียนแผนเทรดระบุจุดเข้า–ออก–ตัดขาดทุนให้ชัด",
+          "ใช้ความรู้สึกและเดาแนวโน้มตลาด",
+        ],
+        correct: 2,
+      },
+      {
+        q: "คำแนะนำที่ถูกต้องที่สุดสำหรับมือใหม่คือข้อใด?",
+        choices: [
+          "ใช้ Leverage สูงสุดเพื่อทำกำไรเร็ว",
+          "เทรดตามเพื่อนทุกครั้ง",
+          "เริ่มด้วยทุนเล็ก ฝึกในบัญชีทดลอง และเน้นวินัย",
+          "เปิดออเดอร์หลายคู่พร้อมกันเพื่อลุ้นกำไรเยอะ",
+        ],
+        correct: 2,
+      },
+    ]);
+  }
+
+  // 2) เทคนิคการเทรดท่า 30MBO - เรียบง่ายแต่ทรงพลัง
+  if (!questions && course.title.trim() === "เทคนิคการเทรดท่า 30MBO - เรียบง่ายแต่ทรงพลัง") {
+    questions = build([
+      {
+        q: "30MBO ย่อมาจากอะไร?",
+        choices: [
+          "30-Minute Balance Order",
+          "30-Minute Breakout",
+          "30 Market Break Opportunity",
+          "30 Moving Base Opening",
+        ],
+        correct: 1,
+      },
+      {
+        q: "แนวคิดหลักของระบบ 30MBO คืออะไร?",
+        choices: [
+          "คาดเดาทิศทางตลาดล่วงหน้า",
+          "รอให้ตลาดบอกทิศทางด้วยการเบรกกรอบ 30 นาทีแรก",
+          "ใช้อินดิเคเตอร์หลายตัวร่วมกัน",
+          "เข้าซื้อทันทีที่ตลาดเปิด",
+        ],
+        correct: 1,
+      },
+      {
+        q: "กรอบราคาที่ใช้ในระบบ 30MBO เรียกว่าอะไร?",
+        choices: ["Opening Range", "Breakout Zone", "Trading Box", "Daily Channel"],
+        correct: 0,
+      },
+      {
+        q: "หากราคาทะลุกรอบ 30 นาทีแรกขึ้นไป ระบบแนะนำให้ทำอย่างไร?",
+        choices: ["รอเทรดสวนทาง", "เข้าซื้อ (BUY) ตามแรงตลาด", "ปิดโพซิชันทันที", "ใช้ EMA ยืนยันก่อน"],
+        correct: 1,
+      },
+      {
+        q: "Stop Loss ควรตั้งไว้ที่ตำแหน่งใด?",
+        choices: ["ด้านเดียวกับกรอบที่เบรก", "กลางกรอบราคา", "ด้านตรงข้ามของกรอบ 30 นาทีแรก", "เหนือจุดเข้าซื้อ 1 Tick"],
+        correct: 2,
+      },
+      {
+        q: "“Tick Penetration” ในระบบ 30MBO หมายถึงอะไร?",
+        choices: [
+          "จำนวนแท่งเทียนที่ปิดในกรอบ",
+          "จำนวน Tick ที่ราคาเบรกเกินกรอบเพื่อยืนยันสัญญาณ",
+          "ความกว้างของกรอบราคา",
+          "ระยะห่างของ Stop Loss",
+        ],
+        correct: 1,
+      },
+      {
+        q: "ตลาดแบบใด “ไม่เหมาะ” กับการใช้ระบบ 30MBO?",
+        choices: ["ตลาดที่มีแนวโน้มชัดเจน (Trending)", "ตลาดที่มีข่าวแรง", "ตลาดที่แกว่งในกรอบแคบ (Sideway)", "ตลาดที่มีปริมาณซื้อขายสูง"],
+        correct: 2,
+      },
+      {
+        q: "จุดเด่นของระบบ 30MBO คืออะไร?",
+        choices: [
+          "ใช้ Indicator หลายตัวช่วยกรองสัญญาณ",
+          "เรียบง่าย วัดผลได้ และใช้วินัยกำหนดจังหวะเทรด",
+          "เน้นการเทรดสวนเทรนด์ระยะสั้น",
+          "เทรดได้ทุกช่วงเวลาโดยไม่ต้องรอข่าว",
+        ],
+        correct: 1,
+      },
+      {
+        q: "“Trailing Stop” ในระบบนี้มีจุดประสงค์เพื่ออะไร?",
+        choices: ["เพิ่มขนาดสัญญา", "ขยับ Stop Loss ตามราคาเพื่อล็อกกำไร", "ปิดโพซิชันอัตโนมัติเมื่อครบเวลา", "ลดต้นทุนค่าธรรมเนียม"],
+        correct: 1,
+      },
+      {
+        q: "องค์ประกอบสำคัญของความสำเร็จในระบบ 30MBO คืออะไร?",
+        choices: ["ดวงและความกล้า", "ความเร็วในการกดคำสั่ง", "วินัย + ระบบ + การบริหารความเสี่ยง", "การเปิดหลายโพซิชันพร้อมกัน"],
+        correct: 2,
+      },
+    ]);
+  }
+
+  // 3) Stochastic Pop - Pop แล้วไป! จังหวะไว กำไรแรง
+  if (!questions && course.title.trim() === "Stochastic Pop - Pop แล้วไป! จังหวะไว กำไรแรง") {
+    questions = build([
+      {
+        q: "แนวคิดหลักของระบบ Stochastic Pop คืออะไร?",
+        choices: [
+          "เทรดสวนเทรนด์ในช่วง Oversold",
+          "เทรดตามเทรนด์ในช่วงพักฐาน",
+          "เทรดตาม Momentum เมื่อเข้าเขต Overbought/Oversold",
+          "เทรดเมื่อ RSI ตัดกับ MACD",
+        ],
+        correct: 2,
+      },
+      {
+        q: "SP ใช้ค่าอะไรใน Stochastic ในการพิจารณาเข้าเทรด?",
+        choices: ["ค่า RSI และ CCI", "ค่า Fast %K", "ค่า Slow %K", "ค่า MACD Histogram"],
+        correct: 2,
+      },
+      {
+        q: "Timeframe ที่แนะนำสำหรับการใช้งาน SP คืออะไร?",
+        choices: ["1 นาที และ 3 นาที", "5 นาที และ 10 นาที", "15 นาที และ 30 นาที", "1 ชั่วโมง และ 4 ชั่วโมง"],
+        correct: 1,
+      },
+      {
+        q: "SP จะเข้าสถานะ Buy เมื่อเกิดเงื่อนไขใด?",
+        choices: ["%K ปิดต่ำกว่า 25%", "%K ตัด %D ขึ้น", "%K ปิดสูงกว่า 75%", "%D ปรับขึ้นเร็วกว่า %K"],
+        correct: 2,
+      },
+      {
+        q: "การออกจากสถานะใน SP ทำเมื่อใด?",
+        choices: ["เมื่อเกิด Bearish Engulfing", "เมื่อ %K และ %D ตัดกัน", "เมื่อราคาแตะ EMA 50", "เมื่อ MACD ให้สัญญาณกลับตัว"],
+        correct: 1,
+      },
+      {
+        q: "หากไม่มีสัญญาณออกใน SP ภายในวัน ควรทำอย่างไร?",
+        choices: ["ถือข้ามคืน", "ปิดครึ่งหนึ่งของออเดอร์", "ปรับ Timeframe", "ปิดสถานะทั้งหมดก่อนสิ้นวัน"],
+        correct: 3,
+      },
+      {
+        q: "ข้อใด “ไม่ใช่” จุดเด่นของ SP?",
+        choices: [
+          "เข้าเทรดตามแรงส่งตลาด",
+          "ใช้กับตลาดที่มีความผันผวน",
+          "ทำกำไรในช่วงที่ตลาดนิ่ง",
+          "เข้าตลาดเมื่อคนส่วนใหญ่ลังเล",
+        ],
+        correct: 2,
+      },
+      {
+        q: "SP เชิงรุก (Aggressive SP) คืออะไร?",
+        choices: [
+          "การเข้าเพิ่มไม้ซ้ำทันที",
+          "การถือสถานะต่อแม้เกิดสัญญาณออก",
+          "การเข้าเทรดด้วย RSI",
+          "การใช้ Moving Average คู่กับ SP",
+        ],
+        correct: 1,
+      },
+      {
+        q: "คำว่า “Pop” ใน Stochastic Pop เปรียบกับอะไร?",
+        choices: ["แรงขายที่มากเกิน", "การกลับตัวแรง", "การระเบิดของ Momentum เหมือนข้าวโพดคั่ว", "การตัดสินใจแบบสุ่ม"],
+        correct: 2,
+      },
+      {
+        q: "SP เหมาะกับนักเทรดประเภทใดมากที่สุด?",
+        choices: ["นักลงทุนถือยาว", "นักเก็งกำไรระยะกลาง", "เทรดเดอร์รายวัน (Day Trader)", "นักเทรดตามข่าว"],
+        correct: 2,
+      },
+    ]);
+  }
+
+  /** ถ้าคอร์สไม่ได้อยู่ 3 กลุ่มบน ให้ใช้คำถามใน course.quiz หรือ fallback เดิม */
+  if (!questions) {
+    questions =
+      (course.quiz?.questions as QuizQuestion[] | undefined) ?? [
+        {
+          q: "หัวใจของการพัฒนาเว็บแบบ Full-Stack คืออะไร?",
+          choices: ["รู้แค่ Frontend", "รู้แค่ Backend", "เข้าใจทั้งระบบตั้งแต่ UI จนถึงฐานข้อมูล"],
+          answer: 2,
+        },
+        {
+          q: "Git ใช้เพื่ออะไร?",
+          choices: ["ตกแต่ง UI", "จัดการเวอร์ชันซอร์สโค้ด", "เรนเดอร์วิดีโอ"],
+          answer: 1,
+        },
+      ];
+  }
+
+  // เกณฑ์ผ่าน 60% (ปัดขึ้น)
+  const passScore = Math.ceil(questions.length * 0.6);
 
   return (
-    <main className="container-narrow py-8 space-y-6">
+    <>
       <Navbar />
-      <QuizClient
-        slug={course.slug}
-        courseTitle={course.title}
-        questions={questions}
-        passScore={passScore}
-      />
-    </main>
+      <main className="container-narrow pt-28 md:pt-32 pb-16">
+        <QuizClient
+          slug={slug}
+          courseTitle={course.title}
+          questions={questions}
+          passScore={passScore}
+        />
+      </main>
+    </>
   );
 }
