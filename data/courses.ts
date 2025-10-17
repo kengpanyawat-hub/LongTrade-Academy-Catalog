@@ -220,7 +220,7 @@ export const courses: ReadonlyArray<Course> = [
   {
     slug: "Technic-30MBO",
     title: "เทคนิคการเทรดท่า 30MBO - เรียบง่ายแต่ทรงพลัง",
-    cover: "/courses/courses2.jpg",
+    cover: "/courses/courses3.jpg",
     hours: "2 ชั่วโมง 40 นาที",
     price: 2990,
     originalPrice: 5990,
@@ -271,7 +271,7 @@ export const courses: ReadonlyArray<Course> = [
   {
     slug: "Stochastic-Pop-Pop",
     title: "Stochastic Pop - Pop แล้วไป! จังหวะไว กำไรแรง",
-    cover: "/courses/courses3.jpg",
+    cover: "/courses/courses2.jpg",
     hours: "2 ชั่วโมง 10 นาที",
     price: 2990,
 	originalPrice: 5990,
