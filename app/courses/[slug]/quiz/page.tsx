@@ -1,23 +1,56 @@
 // app/courses/[slug]/quiz/page.tsx
 import Navbar from "@/components/Navbar";
-import { courses } from "@/data/courses";
+import { findCourse } from "@/data/courses";
 import QuizClient, { type QuizQuestion } from "./QuizClient";
 
-type Params = { params: { slug: string } };
+/** แปลง quiz จาก data/courses (ใช้ answerId) → รูปแบบ QuizClient (ใช้ answer เป็น index) */
+function transformFromCourse(course: ReturnType<typeof findCourse> | undefined): QuizQuestion[] | null {
+  if (!course || !course.quiz || !Array.isArray(course.quiz.questions)) return null;
 
-/** ตัวช่วยสร้างข้อสอบจากรูปแบบ {ถาม, ตัวเลือก[], `idx` ของตัวเลือกที่ถูก} */
-function build(qa: Array<{ q: string; choices: string[]; correct: number }>): QuizQuestion[] {
-  return qa.map(({ q, choices, correct }) => ({
+  try {
+    const questions: QuizQuestion[] = course.quiz.questions.map((q: any) => {
+      const text =
+        q?.q ??
+        q?.title ??
+        (typeof q === "object" ? q?.label ?? q?.text ?? "" : String(q ?? ""));
+      const choices: string[] = (q?.choices ?? []).map((c: any) =>
+        typeof c === "object" ? c?.label ?? c?.text ?? c?.title ?? String(c?.id ?? "") : String(c ?? "")
+      );
+      const idx = Math.max(
+        0,
+        choices.findIndex((c: any, i: number) =>
+          String(q?.answerId ?? q?.answer ?? -1) === String(i) // เผื่อบางโครงเก็บเป็น index อยู่แล้ว
+        )
+      );
+      // ถ้า findIndex ไม่เจอ และมี answer เป็นตัวเลข ให้ใช้ตรง ๆ
+      const answerIndex =
+        idx >= 0 && idx < choices.length
+          ? idx
+          : (typeof q?.answer === "number" ? q.answer : 0);
+
+      return { q: text, choices, answer: answerIndex };
+    });
+    return questions;
+  } catch {
+    return null;
+  }
+}
+
+/** helper: แปลงชุดคำถามที่ส่งมาในรูปแบบ {q, choices, correct} → {q, choices, answer} */
+type BuildItem = { q: string; choices: string[]; correct: number };
+function build(items: BuildItem[]): QuizQuestion[] {
+  return items.map(({ q, choices, correct }) => ({
     q,
     choices,
-    answer: correct, // ใช้ index ของตัวเลือกที่ถูกต้อง
+    answer: correct,
   }));
 }
 
-export default async function QuizPage({ params: { slug } }: Params) {
-  const course = courses.find((c) => c.slug === slug);
+type Params = { params: { slug: string } };
 
-  // กรณี slug ไม่ถูกต้อง
+export default async function QuizPage({ params: { slug } }: Params) {
+  const course = findCourse(slug);
+
   if (!course) {
     return (
       <>
@@ -32,7 +65,7 @@ export default async function QuizPage({ params: { slug } }: Params) {
 
   /** ----------------------------------------------------------------
    *  ชุดคำถามตาม 3 คอร์สแรกที่ผู้ใช้กำหนด
-   *  NOTE: เทียบด้วย course.title เพื่อความชัด (หากต้องการเปลี่ยนเป็นเทียบ slug ก็ได้)
+   *  NOTE: เทียบด้วย course.title เพื่อความชัด (เปลี่ยนเป็น slug ได้)
    *  ---------------------------------------------------------------- */
   let questions: QuizQuestion[] | undefined;
 
@@ -289,10 +322,12 @@ export default async function QuizPage({ params: { slug } }: Params) {
     ]);
   }
 
-  /** ถ้าคอร์สไม่ได้อยู่ 3 กลุ่มบน ให้ใช้คำถามใน course.quiz หรือ fallback เดิม */
+  /** ถ้าคอร์สไม่ได้อยู่ 3 กลุ่มบน → ใช้ quiz จาก data หรือ fallback */
   if (!questions) {
+    const transformed = transformFromCourse(course);
     questions =
-      (course.quiz?.questions as QuizQuestion[] | undefined) ?? [
+      transformed ??
+      ([
         {
           q: "หัวใจของการพัฒนาเว็บแบบ Full-Stack คืออะไร?",
           choices: ["รู้แค่ Frontend", "รู้แค่ Backend", "เข้าใจทั้งระบบตั้งแต่ UI จนถึงฐานข้อมูล"],
@@ -303,7 +338,7 @@ export default async function QuizPage({ params: { slug } }: Params) {
           choices: ["ตกแต่ง UI", "จัดการเวอร์ชันซอร์สโค้ด", "เรนเดอร์วิดีโอ"],
           answer: 1,
         },
-      ];
+      ] satisfies QuizQuestion[]);
   }
 
   // เกณฑ์ผ่าน 60% (ปัดขึ้น)
@@ -312,7 +347,7 @@ export default async function QuizPage({ params: { slug } }: Params) {
   return (
     <>
       <Navbar />
-      <main className="container-narrow pt-28 md:pt-32 pb-16">
+      <main className="container-narrow pt-28 pb-16">
         <QuizClient
           slug={slug}
           courseTitle={course.title}
